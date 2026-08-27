@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Piano LED · Neon Practice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='4' fill='%23070b14'/><circle cx='8' cy='8' r='4' fill='%23ff3d71'/></svg>"
+    />
+  </head>
+  <body>
+    <div class="atmosphere" aria-hidden="true"></div>
+    <div class="app">
+      <aside class="archive glass">
+        <header class="archive-head">
+          <div class="player-card">
+            <div class="avatar-ring" aria-hidden="true">
+              <span id="rank-badge">C</span>
+            </div>
+            <div class="player-meta">
+              <p class="eyebrow">Pilot</p>
+              <p id="rank-title" class="rank-title">Cadet</p>
+              <div class="xp-bar" title="Experience">
+                <div id="xp-fill" class="xp-fill"></div>
+              </div>
+              <p class="xp-label">
+                Lv <span id="level-num">1</span>
+                · <span id="xp-text">0</span> XP
+              </p>
+            </div>
+          </div>
+          <div class="stat-chips">
+            <div class="chip">
+              <span class="chip-label">Streak</span>
+              <span id="streak-num" class="chip-value">0</span>
+            </div>
+            <div class="chip">
+              <span class="chip-label">Runs</span>
+              <span id="runs-num" class="chip-value">0</span>
+            </div>
+          </div>
+          <h1>Quest Log</h1>
+          <label class="search">
+            <span class="sr-only">Search MIDI files</span>
+            <input id="search" type="search" placeholder="Find a quest…" autocomplete="off" />
+          </label>
+        </header>
+        <ul id="file-list" class="file-list"></ul>
+        <footer class="archive-foot">
+          <label class="upload">
+            <input id="upload" type="file" accept=".mid,.midi,audio/midi" hidden />
+            <span class="upload-mark">+</span>
+            Import MIDI
+          </label>
+        </footer>
+      </aside>
+
+      <main class="stage">
+        <header class="topbar">
+          <div class="brand">
+            <p class="brand-mark">Neon Arena</p>
+            <h1 class="brand-title">Piano LED</h1>
+            <p class="tagline">Light-guided practice · Alesis Q49</p>
+          </div>
+          <div class="hud-combo glass" aria-live="polite">
+            <p class="combo-label">Combo</p>
+            <p id="combo-num" class="combo-num">0</p>
+            <p id="combo-mult" class="combo-mult">×1.0</p>
+          </div>
+          <div class="arduino glass">
+            <label class="field">
+              <span class="field-label">Preset</span>
+              <select id="preset">
+                <option value="q49">Alesis Q49 (49 keys)</option>
+                <option value="test-8">8 keys after skip</option>
+              </select>
+            </label>
+            <label class="field">
+              <span class="field-label">Port</span>
+              <select id="port"></select>
+            </label>
+            <button id="connect" type="button" class="ghost">Connect</button>
+            <span id="arduino-state" class="state" data-on="false">Offline</span>
+          </div>
+        </header>
+
+        <section class="now">
+          <div class="now-copy">
+            <p id="now-label" class="eyebrow">Ready</p>
+            <h2 id="now-title">Choose a quest</h2>
+            <div id="count-in" class="count-in" hidden aria-live="assertive">
+              <span class="count-ring"></span>
+              <span id="count-num">1</span>
+            </div>
+            <p id="now-meta" class="meta">
+              Pick a piece from the quest log. Keys light green when they play.
+            </p>
+          </div>
+          <dl id="song-info" class="song-info glass" hidden>
+            <div>
+              <dt>Key</dt>
+              <dd id="info-key">—</dd>
+            </div>
+            <div>
+              <dt>Tempo</dt>
+              <dd id="info-tempo">—</dd>
+            </div>
+            <div>
+              <dt>Meter</dt>
+              <dd id="info-meter">—</dd>
+            </div>
+            <div>
+              <dt>Length</dt>
+              <dd id="info-length">—</dd>
+            </div>
+          </dl>
+        </section>
+
+        <section class="transport glass" aria-label="Playback">
+          <div class="progress-wrap">
+            <input id="progress" type="range" min="0" max="1000" value="0" disabled />
+            <div class="times">
+              <span id="elapsed">0:00</span>
+              <span id="session-xp" class="session-xp">+0 XP</span>
+              <span id="duration">0:00</span>
+            </div>
+          </div>
+          <div class="tempo-row">
+            <div class="tempo-control">
+              <span class="tempo-label">Tempo</span>
+              <div class="tempo-stepper">
+                <input
+                  id="tempo"
+                  type="number"
+                  inputmode="numeric"
+                  min="1"
+                  step="1"
+                  value="120"
+                  disabled
+                  aria-label="Tempo in BPM"
+                />
+                <span class="tempo-unit">BPM</span>
+                <div class="tempo-buttons">
+                  <button id="tempo-minus" type="button" class="ghost tempo-btn" disabled aria-label="Decrease tempo">
+                    −
+                  </button>
+                  <button id="tempo-plus" type="button" class="ghost tempo-btn" disabled aria-label="Increase tempo">
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+            <button id="tempo-reset" type="button" class="ghost" disabled>Reset</button>
+            <button id="metronome" type="button" class="ghost" aria-pressed="false">
+              Metronome off
+            </button>
+            <label class="color-control" title="LED color">
+              <span class="tempo-label">LED</span>
+              <input id="led-color" type="color" value="#00dc28" aria-label="LED color" />
+            </label>
+          </div>
+          <div class="controls">
+            <button id="play" type="button" class="primary" disabled>Play</button>
+            <button id="pause" type="button" class="ghost" disabled>Pause</button>
+            <button id="stop" type="button" class="ghost" disabled>Stop</button>
+            <button id="mute" type="button" class="ghost" aria-pressed="false">Sound on</button>
+            <span class="controls-divider" aria-hidden="true"></span>
+            <button id="walk" type="button" class="ghost">Key walk</button>
+            <button id="chord" type="button" class="ghost">Chord test</button>
+          </div>
+          <p id="mode" class="mode">Alesis Q49 · skip LED 0–23 · LED 24 = C2 … LED 72 = C6</p>
+        </section>
+
+        <section class="instrument" aria-label="Piano visualization">
+          <div class="instrument-head">
+            <div>
+              <p class="eyebrow">Live surface</p>
+              <p class="color-legend" aria-hidden="true">
+                <span class="swatch now"></span> playing
+              </p>
+            </div>
+            <p id="map-legend" class="map-legend"></p>
+          </div>
+          <div class="keyboard-wrap glass">
+            <div id="led-strip" class="led-strip" aria-hidden="true"></div>
+            <div id="keyboard" class="keyboard" role="img" aria-label="Alesis Q49 49-key keyboard"></div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div id="toast" class="toast" hidden></div>
+    <script src="/static/app.js" type="module"></script>
+  </body>
+</html>
