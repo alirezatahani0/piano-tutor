@@ -94,6 +94,17 @@ Drop `.mid` / `.midi` files into `archive/`, or use **Import MIDI** in the UI. P
 
 The bundled archive targets **500+** practice pieces (classical MIDI collections plus public-domain / research sets). Quality varies by source — prefer named classical titles when practicing by ear.
 
+## Marketing site (Farsi)
+
+A responsive sales landing page lives in `website/`:
+
+```bash
+cd website
+python3 -m http.server 5500
+```
+
+Open http://127.0.0.1:5500
+
 ## License / credits
 
 Application code is yours to use in this repo. MIDI files in `archive/` come from public classical MIDI sources (e.g. [piano-midi.de](http://www.piano-midi.de/)); respect each source’s terms for redistribution.

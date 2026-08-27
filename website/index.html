@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>نورپیانو · هنر نور، مهندسی نت</title>
+    <meta
+      name="description"
+      content="نورپیانو جایی است که هنر نوازندگی به مهندسی نور می‌رسد؛ نوار WS2812B، آردوینو و نرم‌افزار دقیق برای دیدن هر نت روی کلاویه."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lalezar&family=Vazirmatn:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a0a0a'/><rect x='4' y='18' width='24' height='8' fill='%23222222'/><circle cx='10' cy='12' r='3' fill='%232ee59d'/></svg>"
+    />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0a0a0a" />
+  </head>
+  <body class="theme-dark">
+    <div class="grain" aria-hidden="true"></div>
+    <div class="bg-wash" aria-hidden="true"></div>
+
+    <header class="site-header" data-header>
+      <a class="logo" href="#top">نورپیانو</a>
+      <nav class="nav" aria-label="منوی اصلی">
+        <a href="#dual">هنر و مهندسی</a>
+        <a href="#demo">نمونه</a>
+        <a href="#lab">آزمایشگاه</a>
+        <a href="#price">قیمت</a>
+        <a class="nav-order" href="#order">سفارش</a>
+      </nav>
+      <a class="header-cta" href="#order">سفارش</a>
+      <button class="nav-toggle" type="button" aria-label="منو" aria-expanded="false" data-nav-toggle>
+        <span></span><span></span>
+      </button>
+    </header>
+
+    <main id="top">
+      <!-- Sticky hero: piano → WS2812B strip -->
+      <section class="hero-stage" data-hero-stage>
+        <div class="hero-sticky">
+          <div class="hero-copy" data-hero-copy>
+            <p class="brand-lockup">نورپیانو</p>
+            <h1 data-hero-title>هنر نور روی کلاویه</h1>
+            <p class="hero-lead" data-hero-lead>جایی که نوازندگی به مهندسی نور می‌رسد.</p>
+            <div class="hero-actions">
+              <a class="btn primary" href="#order">دریافت کیت</a>
+              <a class="btn ghost" href="#dual">هنر و مهندسی</a>
+            </div>
+          </div>
+
+          <div class="piano-scene" data-piano-scene aria-hidden="true">
+            <div class="piano-glow" data-piano-glow></div>
+            <div class="piano" data-piano>
+              <div class="piano-lid"></div>
+              <div class="piano-fallboard">
+                <span class="piano-badge">نورپیانو</span>
+              </div>
+
+              <div class="ws2812-mount" data-led-mount>
+                <div class="ws2812-strip" data-led-strip>
+                  <div class="ws2812-pcb">
+                    <span class="ws2812-label">WS2812B</span>
+                    <div class="ws2812-leds" data-leds></div>
+                  </div>
+                  <div class="ws2812-wire"></div>
+                </div>
+              </div>
+
+              <div class="piano-deck">
+                <div class="keys-bed">
+                  <div class="white-keys" data-white-keys></div>
+                  <div class="black-keys" data-black-keys></div>
+                </div>
+              </div>
+              <div class="piano-base"></div>
+              <div class="piano-shadow"></div>
+            </div>
+          </div>
+
+          <div class="scroll-hint" data-scroll-hint aria-hidden="true">
+            <span>اسکرول</span>
+            <i></i>
+          </div>
+        </div>
+      </section>
+
+      <!-- Dual manifesto: Art × Engineering -->
+      <section class="dual" id="dual" data-enter>
+        <div class="dual-inner">
+          <div class="dual-head">
+            <p class="eyebrow">دو زبان، یک ساز</p>
+            <h2>هنر احساس می‌کند؛ مهندسی دقیق می‌سازد.</h2>
+            <p class="dual-sub">هنر در نور؛ مهندسی در مدار — دو زبان برای یک ساز.</p>
+          </div>
+          <div class="dual-grid">
+            <article class="dual-card dual-art">
+              <p class="dual-kicker">Artistic</p>
+              <h3>نور به‌جای نت‌خوانی خشک</h3>
+              <p>
+                هر نت یک جرقهٔ سبز است. چشم پیش از انگشت حرکت می‌کند؛ تمرین شبیه اجرا می‌شود، نه تمرین جدول.
+              </p>
+              <ul>
+                <li>هم‌زمانی چشم و دست</li>
+                <li>حس ریتم با مترونوم نوری</li>
+                <li>قطعات کلاسیک تا معاصر</li>
+              </ul>
+            </article>
+            <article class="dual-card dual-eng">
+              <p class="dual-kicker">Engineering</p>
+              <h3>سیگنال MIDI تا پیکسل LED</h3>
+              <p>
+                از کیبورد MIDI تا سریال، تا آردوینو و نوار WS2812B — هر کلاویه یک آدرس نور دارد، بدون تاخیر قابل حس.
+              </p>
+              <ul>
+                <li>پروتکل <span dir="ltr">ON / OFF / CLEAR</span></li>
+                <li>نگاشت نت → ایندکس LED</li>
+                <li>سخت‌افزار باز و قابل تعمیر</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sticky scroll story -->
+      <section class="story" id="story" data-story>
+        <div class="story-sticky">
+          <div class="story-visual" data-story-visual>
+            <div class="story-panel panel-a is-active" data-panel="0">
+              <div class="panel-media media-led">
+                <div class="led-beam"></div>
+                <div class="led-keys"></div>
+              </div>
+            </div>
+            <div class="story-panel panel-b" data-panel="1">
+              <div class="panel-media media-app">
+                <div class="app-chrome">
+                  <span></span><span></span><span></span>
+                </div>
+                <div class="app-screen">
+                  <div class="app-row"></div>
+                  <div class="app-row short"></div>
+                  <div class="app-keys"></div>
+                </div>
+              </div>
+            </div>
+            <div class="story-panel panel-c" data-panel="2">
+              <div class="panel-media media-kit">
+                <div class="kit-box"></div>
+                <div class="kit-strip"></div>
+                <div class="kit-board"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="story-copy">
+            <article class="story-beat is-active" data-beat="0">
+              <p class="eyebrow">هنر</p>
+              <h2>نور، زبان دوم موسیقی است.</h2>
+              <p>به‌جای ترس از نت‌نویسی، مسیر انگشت را می‌بینید — مثل یک پارتیتور زنده روی خود ساز.</p>
+            </article>
+            <article class="story-beat" data-beat="1">
+              <p class="eyebrow">نرم‌افزار</p>
+              <h2>استودیوی تمرین، روی وب.</h2>
+              <p>آرشیو، تمپو، رنگ LED و مترونوم — کنترل هنری با دقت مهندسی.</p>
+            </article>
+            <article class="story-beat" data-beat="2">
+              <p class="eyebrow">مهندسی</p>
+              <h2>کیت باز، مدار شفاف.</h2>
+              <p>آردوینو، نوار WS2812B، کابل سریال و نقشهٔ نگاشت — برای کیبوردهایی مثل Alesis Q49.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Interactive showcase -->
+      <section class="showcase" id="demo" data-showcase>
+        <div class="showcase-inner">
+          <div class="showcase-head" data-enter>
+            <p class="eyebrow">اجرای زنده</p>
+            <h2>قطعه را انتخاب کنید؛ نور را بشنوید</h2>
+            <p>هنر در انتخاب قطعه است؛ مهندسی در همگام‌سازی هر LED با هر نت.</p>
+          </div>
+
+          <div class="showcase-grid">
+            <div class="showcase-stage" data-enter-from="right">
+              <div class="showcase-photo">
+                <img
+                  src="https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?auto=format&fit=crop&w=1400&q=80"
+                  alt=""
+                  width="1400"
+                  height="900"
+                  loading="lazy"
+                />
+                <div class="showcase-photo-shade"></div>
+              </div>
+
+              <div class="demo-piano piano piano--studio" data-demo-piano>
+                <div class="piano-lid"></div>
+                <div class="piano-fallboard">
+                  <span class="piano-badge">نورپیانو · Live</span>
+                  <span class="demo-now" data-demo-now>آماده</span>
+                </div>
+                <div class="ws2812-mount ws2812-mount--static">
+                  <div class="ws2812-strip ws2812-strip--visible">
+                    <div class="ws2812-pcb">
+                      <span class="ws2812-label">WS2812B</span>
+                      <div class="ws2812-leds" data-demo-leds></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="piano-deck">
+                  <div class="keys-bed">
+                    <div class="white-keys" data-demo-white></div>
+                    <div class="black-keys" data-demo-black></div>
+                  </div>
+                </div>
+                <div class="piano-base"></div>
+              </div>
+
+              <div class="demo-transport">
+                <button type="button" class="btn ghost demo-btn" data-demo-stop>توقف</button>
+                <button type="button" class="btn primary demo-btn" data-demo-replay>پخش دوباره</button>
+              </div>
+            </div>
+
+            <aside class="song-panel" data-enter-from="left" aria-label="فهرست قطعات">
+              <p class="song-panel-label">رپرتوار نمونه</p>
+              <ul class="song-list" data-song-list role="listbox"></ul>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <!-- Engineering lab -->
+      <section class="lab" id="lab">
+        <div class="lab-inner">
+          <div class="lab-head" data-enter>
+            <p class="eyebrow">آزمایشگاه</p>
+            <h2>آنچه زیر نور می‌گذرد</h2>
+            <p>از کلید فیزیکی تا پیکسل — لایه به لایه.</p>
+          </div>
+
+          <div class="lab-stack" data-enter>
+            <div class="lab-step">
+              <span class="lab-code" dir="ltr">01 MIDI</span>
+              <h3>ورودی نت</h3>
+              <p>کیبورد MIDI نت و شدت را می‌فرستد.</p>
+            </div>
+            <div class="lab-step">
+              <span class="lab-code" dir="ltr">02 MAP</span>
+              <h3>نگاشت</h3>
+              <p>نت → ایندکس LED با آفست سخت‌افزاری.</p>
+            </div>
+            <div class="lab-step">
+              <span class="lab-code" dir="ltr">03 UART</span>
+              <h3>سریال</h3>
+              <p><span dir="ltr">115200 baud</span> · فرمان‌های متنی سبک.</p>
+            </div>
+            <div class="lab-step">
+              <span class="lab-code" dir="ltr">04 WS2812B</span>
+              <h3>نور</h3>
+              <p>هر LED یک کلاویه؛ رنگ قابل تنظیم.</p>
+            </div>
+          </div>
+
+          <div class="spec-grid" data-enter>
+            <article class="spec-card">
+              <h3>سخت‌افزار</h3>
+              <dl>
+                <div><dt>کنترلر</dt><dd>Arduino + FastLED</dd></div>
+                <div><dt>نوار</dt><dd>WS2812B</dd></div>
+                <div><dt>نمونه کیبورد</dt><dd>Alesis Q49 · نت ۳۶–۸۴</dd></div>
+                <div><dt>آفست LED</dt><dd dir="ltr">24</dd></div>
+              </dl>
+            </article>
+            <article class="spec-card">
+              <h3>پروتکل سریال</h3>
+              <pre class="spec-pre" dir="ltr">ON,&lt;led&gt;,&lt;r&gt;,&lt;g&gt;,&lt;b&gt;
+OFF,&lt;led&gt;
+CLEAR</pre>
+              <p class="spec-note">ساده، قابل دیباگ، بدون باینری مبهم.</p>
+            </article>
+            <article class="spec-card">
+              <h3>نرم‌افزار</h3>
+              <dl>
+                <div><dt>سرور</dt><dd>FastAPI</dd></div>
+                <div><dt>پلیر</dt><dd>MIDI → LED realtime</dd></div>
+                <div><dt>آرشیو</dt><dd>+۸۰۰ قطعه</dd></div>
+                <div><dt>UI</dt><dd>وب · تمپو · رنگ</dd></div>
+              </dl>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Gallery: art + engineering photos -->
+      <section class="gallery" id="kit">
+        <div class="gallery-head" data-enter>
+          <p class="eyebrow">متریال</p>
+          <h2>زیبایی در جزئیات؛ دقت در ساخت</h2>
+        </div>
+
+        <div class="gallery-row">
+          <figure class="gallery-shot shot-wide shot-photo" data-parallax data-enter-from="right">
+            <img
+              src="https://images.unsplash.com/photo-1552422535-c45813c61732?auto=format&fit=crop&w=1400&q=80"
+              alt="کیبورد پیانو با نور"
+              width="1400"
+              height="900"
+              loading="lazy"
+            />
+            <figcaption>هنر — نور درست بالای کلاویه</figcaption>
+          </figure>
+          <figure class="gallery-shot shot-tall shot-photo" data-parallax data-enter-from="left">
+            <img
+              src="https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=900&q=80"
+              alt="برد الکترونیک"
+              width="900"
+              height="1200"
+              loading="lazy"
+            />
+            <figcaption>مهندسی — مدار و سیگنال</figcaption>
+          </figure>
+        </div>
+
+        <div class="gallery-row reverse">
+          <figure class="gallery-shot shot-tall shot-photo" data-parallax data-enter-from="right">
+            <img
+              src="https://images.unsplash.com/photo-1581092918056-0c4c3acd3789?auto=format&fit=crop&w=900&q=80"
+              alt="ابزار مهندسی و ساخت"
+              width="900"
+              height="1200"
+              loading="lazy"
+            />
+            <figcaption>ساخت — کیت باز و قابل لمس</figcaption>
+          </figure>
+          <figure class="gallery-shot shot-wide shot-photo" data-parallax data-enter-from="left">
+            <img
+              src="https://images.unsplash.com/photo-1507838153416-c08a2b6c3f4d?auto=format&fit=crop&w=1400&q=80"
+              alt="نوازنده پشت پیانو"
+              width="1400"
+              height="900"
+              loading="lazy"
+            />
+            <figcaption>اجرا — بیش از ۸۰۰ قطعه</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="marquee" data-marquee>
+        <p data-marquee-text>هنر · نور · مهندسی · نت</p>
+      </section>
+
+      <section class="features">
+        <div class="features-inner">
+          <article data-enter>
+            <h3>بیان هنری</h3>
+            <p>نور به‌عنوان راهنما، نه حواس‌پرتی — ریتم و عبارت را حس می‌کنید.</p>
+          </article>
+          <article data-enter>
+            <h3>دقت مهندسی</h3>
+            <p>نگاشت یک‌به‌یک نت و LED، تأخیر کم، کنترل رنگ و شدت.</p>
+          </article>
+          <article data-enter>
+            <h3>کیت قابل فهم</h3>
+            <p>سخت‌افزار باز، پروتکل متنی، راهنمای فارسی و پشتیبانی.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="pricing" id="price">
+        <div class="pricing-inner" data-enter>
+          <p class="eyebrow">کیت‌ها</p>
+          <h2>از استودیوی خانگی تا کارگاه</h2>
+          <div class="plans" role="list">
+            <label class="plan" role="listitem">
+              <input type="radio" name="plan" value="starter" />
+              <span class="plan-body">
+                <span class="plan-name">آغاز</span>
+                <span class="plan-price">۴٬۹۰۰٬۰۰۰ <small>تومان</small></span>
+                <span class="plan-note">کیت سخت‌افزاری + اپ وب</span>
+              </span>
+            </label>
+            <label class="plan featured" role="listitem">
+              <input type="radio" name="plan" value="pro" checked />
+              <span class="plan-body">
+                <span class="plan-tag">پیشنهاد ما</span>
+                <span class="plan-name">آتلیه</span>
+                <span class="plan-price">۶٬۹۰۰٬۰۰۰ <small>تومان</small></span>
+                <span class="plan-note">کیت کامل + راهنما + پشتیبانی ۳۰ روزه</span>
+              </span>
+            </label>
+            <label class="plan" role="listitem">
+              <input type="radio" name="plan" value="studio" />
+              <span class="plan-body">
+                <span class="plan-name">کارگاه</span>
+                <span class="plan-price">۹٬۹۰۰٬۰۰۰ <small>تومان</small></span>
+                <span class="plan-note">دو کیت + راه‌اندازی حضوری در تهران</span>
+              </span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <section class="order" id="order">
+        <div class="order-panel" data-enter>
+          <div>
+            <p class="eyebrow">سفارش</p>
+            <h2>آمادهٔ ساخت نور روی سازتان هستید؟</h2>
+            <p>فرم را پر کنید؛ ظرف یک روز کاری برای هماهنگی ارسال تماس می‌گیریم.</p>
+          </div>
+          <form class="order-form" id="order-form">
+            <label>
+              نام و نام خانوادگی
+              <input name="name" type="text" autocomplete="name" required />
+            </label>
+            <label>
+              موبایل
+              <input name="phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="۰۹۱۲…" />
+            </label>
+            <label>
+              شهر
+              <input name="city" type="text" required />
+            </label>
+            <label class="full">
+              پیام (اختیاری)
+              <textarea name="message" rows="3" placeholder="مدل کیبورد یا ایدهٔ هنری‌تان"></textarea>
+            </label>
+            <button class="btn primary full-btn" type="submit">ثبت درخواست</button>
+            <p class="form-status" id="form-status" hidden></p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div>
+        <p class="logo">نورپیانو</p>
+        <p>هنر نور · مهندسی نت · ساخت ایران</p>
+      </div>
+      <div class="footer-links">
+        <a href="mailto:hello@noorpiano.ir">hello@noorpiano.ir</a>
+        <a href="https://github.com/alirezatahani0/piano-tutor" rel="noopener" target="_blank">گیت‌هاب پروژه</a>
+      </div>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>
