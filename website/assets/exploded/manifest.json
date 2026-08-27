@@ -1,0 +1,48 @@
+{
+  "width": 1600,
+  "height": 816,
+  "layers": [
+    {
+      "file": "01-top-shell.png",
+      "label": "top-shell",
+      "h": 131,
+      "w": 1600
+    },
+    {
+      "file": "02-control-pcb.png",
+      "label": "control-pcb",
+      "h": 43,
+      "w": 1600
+    },
+    {
+      "file": "03-led-diffuser.png",
+      "label": "led-diffuser",
+      "h": 41,
+      "w": 1600
+    },
+    {
+      "file": "04-keyboard.png",
+      "label": "keyboard",
+      "h": 149,
+      "w": 1600
+    },
+    {
+      "file": "05-key-action.png",
+      "label": "key-action",
+      "h": 126,
+      "w": 1600
+    },
+    {
+      "file": "06-main-pcb.png",
+      "label": "main-pcb",
+      "h": 118,
+      "w": 1600
+    },
+    {
+      "file": "07-bottom-shell.png",
+      "label": "bottom-shell",
+      "h": 151,
+      "w": 1600
+    }
+  ]
+}
