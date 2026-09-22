@@ -2,7 +2,10 @@
 
 Light-guided piano practice: play MIDI from a web UI and light matching keys on a WS2812 LED strip over an Arduino.
 
-Built for an **Alesis Q49** (49 keys, MIDI 36–84 / C2–C6) with a **73-LED** strip (LEDs 0–23 skipped; LED 24 = C2 … LED 72 = C6).
+Built for an **Alesis Q49** (49 keys, MIDI 36–84 / C2–C6) or **Yamaha YDP-145** (88 keys, MIDI 21–108 / A0–C8).
+
+Default Q49 strip: **73 LEDs** (LEDs 0–23 skipped; LED 24 = C2 … LED 72 = C6).  
+YDP-145 strip: **88 LEDs** (LED 0 = A0 … LED 87 = C8).
 
 ## Features
 
@@ -18,8 +21,9 @@ Built for an **Alesis Q49** (49 keys, MIDI 36–84 / C2–C6) with a **73-LED** 
 | Piece | Notes |
 | --- | --- |
 | Arduino (UNO / Nano / similar) | USB serial @ **115200** |
-| WS2812 / NeoPixel strip | **73** LEDs, data on **pin 5** (see sketch) |
+| WS2812 / NeoPixel strip | **88** LEDs max (or 73 for Q49), data on **pin 5** |
 | Alesis Q49 | Default octave (no OCTAVE +/-) |
+| Yamaha YDP-145 | Full 88-key A0–C8 |
 
 Upload `arduino/piano_led/piano_led.ino` with the [Adafruit NeoPixel](https://github.com/adafruit/Adafruit_NeoPixel) library.
 

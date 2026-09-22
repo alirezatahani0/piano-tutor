@@ -17,12 +17,22 @@ FIRST_MIDI_NOTE = 36  # C2
 LAST_MIDI_NOTE = 84   # C6
 NUM_PIANO_KEYS = LAST_MIDI_NOTE - FIRST_MIDI_NOTE + 1  # 49
 
+# Yamaha YDP-145 — 88 keys, standard piano range A0 → C8
+YDP145_NAME = "Yamaha YDP-145"
+YDP145_FIRST_MIDI = 21  # A0
+YDP145_LAST_MIDI = 108  # C8
+YDP145_KEYS = YDP145_LAST_MIDI - YDP145_FIRST_MIDI + 1  # 88
+
 # Skip this many LEDs before the leftmost Q49 key (C2).
 LED_OFFSET = 24
 
 # Full Q49 array: 24 skipped + 49 keys.
 FULL_LED_OFFSET = LED_OFFSET
 FULL_NUM_LEDS = FULL_LED_OFFSET + NUM_PIANO_KEYS  # 73
+
+# YDP-145 strip: one LED per key, no skip.
+YDP145_LED_OFFSET = 0
+YDP145_NUM_LEDS = YDP145_KEYS  # 88
 
 # Bench / partial strip: same skip, then the first N keys.
 TEST_LED_OFFSET = LED_OFFSET
@@ -40,14 +50,31 @@ PRESETS = {
     "q49": {
         "name": "q49",
         "label": "Alesis Q49 (49 keys)",
+        "keyboard": "Alesis Q49",
+        "first_midi": FIRST_MIDI_NOTE,
+        "last_midi": LAST_MIDI_NOTE,
         "led_offset": FULL_LED_OFFSET,
         "num_leds": FULL_NUM_LEDS,
         "fold_to_strip": False,
         "hint": "Skip LED 0–23. LED 24=C2 … LED 72=C6 (Q49 default octave).",
     },
+    "ydp145": {
+        "name": "ydp145",
+        "label": "Yamaha YDP-145 (88 keys)",
+        "keyboard": YDP145_NAME,
+        "first_midi": YDP145_FIRST_MIDI,
+        "last_midi": YDP145_LAST_MIDI,
+        "led_offset": YDP145_LED_OFFSET,
+        "num_leds": YDP145_NUM_LEDS,
+        "fold_to_strip": False,
+        "hint": "Full 88-key. LED 0=A0 … LED 87=C8 (one LED per key).",
+    },
     "test-8": {
         "name": "test-8",
         "label": "8 keys after skip",
+        "keyboard": "Alesis Q49",
+        "first_midi": FIRST_MIDI_NOTE,
+        "last_midi": LAST_MIDI_NOTE,
         "led_offset": TEST_LED_OFFSET,
         "num_leds": TEST_NUM_LEDS,
         "fold_to_strip": False,
@@ -79,19 +106,29 @@ class PlayerStatus:
     active_notes: list[int] = field(default_factory=list)
 
 
-def midi_to_led(note: int, offset: int = LED_OFFSET) -> int | None:
+def midi_to_led(
+    note: int,
+    offset: int = LED_OFFSET,
+    *,
+    first_midi: int = FIRST_MIDI_NOTE,
+    last_midi: int = LAST_MIDI_NOTE,
+) -> int | None:
     """
-    One LED per Alesis Q49 key, left → right, after a skipped prefix.
+    One LED per keyboard key, left → right, after an optional skipped prefix.
 
-    With offset 24 (Q49 default octave, no OCTAVE +/-):
+    Q49 (offset 24, C2–C6):
       LED 0–23     skipped
       LED 24       C2  (leftmost white)
-      LED 25       C#2 (black)
       ...
       LED 72       C6
+
+    88-key / YDP-145 (offset 0, A0–C8):
+      LED 0        A0
+      ...
+      LED 87       C8
     """
-    if FIRST_MIDI_NOTE <= note <= LAST_MIDI_NOTE:
-        return (note - FIRST_MIDI_NOTE) + offset
+    if first_midi <= note <= last_midi:
+        return (note - first_midi) + offset
     return None
 
 
@@ -101,12 +138,13 @@ def physical_led(
     *,
     num_leds: int,
     fold_to_strip: bool,
+    first_midi: int = FIRST_MIDI_NOTE,
 ) -> int | None:
     """Map a logical piano LED onto the connected physical strip."""
     if num_leds <= 0:
         return None
     if fold_to_strip:
-        return (midi_note - FIRST_MIDI_NOTE) % num_leds
+        return (midi_note - first_midi) % num_leds
     if 0 <= led < num_leds:
         return led
     return None
@@ -121,17 +159,29 @@ def midi_note_name(note: int) -> str:
     return f"{name}{octave}"
 
 
-def keys_on_strip(offset: int, num_leds: int) -> list[int]:
+def keys_on_strip(
+    offset: int,
+    num_leds: int,
+    *,
+    first_midi: int = FIRST_MIDI_NOTE,
+    last_midi: int = LAST_MIDI_NOTE,
+) -> list[int]:
     """MIDI notes whose LEDs exist on the current physical strip."""
     notes = []
-    for note in range(FIRST_MIDI_NOTE, LAST_MIDI_NOTE + 1):
-        led = midi_to_led(note, offset)
+    for note in range(first_midi, last_midi + 1):
+        led = midi_to_led(note, offset, first_midi=first_midi, last_midi=last_midi)
         if led is not None and 0 <= led < num_leds:
             notes.append(note)
     return notes
 
 
-def build_timeline(mid: mido.MidiFile, offset: int = LED_OFFSET) -> list[Event]:
+def build_timeline(
+    mid: mido.MidiFile,
+    offset: int = LED_OFFSET,
+    *,
+    first_midi: int = FIRST_MIDI_NOTE,
+    last_midi: int = LAST_MIDI_NOTE,
+) -> list[Event]:
     events: list[Event] = []
     current_time = 0.0
 
@@ -139,7 +189,9 @@ def build_timeline(mid: mido.MidiFile, offset: int = LED_OFFSET) -> list[Event]:
         current_time += message.time
 
         if message.type == "note_on" and message.velocity > 0:
-            led = midi_to_led(message.note, offset)
+            led = midi_to_led(
+                message.note, offset, first_midi=first_midi, last_midi=last_midi
+            )
             if led is not None:
                 events.append(
                     Event(
@@ -153,7 +205,9 @@ def build_timeline(mid: mido.MidiFile, offset: int = LED_OFFSET) -> list[Event]:
         elif message.type == "note_off" or (
             message.type == "note_on" and message.velocity == 0
         ):
-            led = midi_to_led(message.note, offset)
+            led = midi_to_led(
+                message.note, offset, first_midi=first_midi, last_midi=last_midi
+            )
             if led is not None:
                 events.append(
                     Event(
@@ -275,7 +329,12 @@ def inspect_midi(path: Path) -> dict:
         return cached
 
     mid = mido.MidiFile(path)
-    events = build_timeline(mid, FULL_LED_OFFSET)
+    events = build_timeline(
+        mid,
+        YDP145_LED_OFFSET,
+        first_midi=YDP145_FIRST_MIDI,
+        last_midi=YDP145_LAST_MIDI,
+    )
     duration = float(getattr(mid, "length", 0.0) or 0.0)
     if events:
         duration = max(duration, events[-1].time)
@@ -527,6 +586,9 @@ class PianoPlayer:
                 self._led_offset = int(chosen["led_offset"])
                 self._num_leds = int(chosen["num_leds"])
                 self._fold_to_strip = bool(chosen["fold_to_strip"])
+                self._first_midi = int(chosen["first_midi"])
+                self._last_midi = int(chosen["last_midi"])
+                self._keyboard = str(chosen["keyboard"])
             if led_offset is not None:
                 self._led_offset = max(0, int(led_offset))
                 self._preset = "custom"
@@ -729,7 +791,11 @@ class PianoPlayer:
         mid = mido.MidiFile(path)
         with self._lock:
             offset = self._led_offset
-        events = build_timeline(mid, offset)
+            first_midi = self._first_midi
+            last_midi = self._last_midi
+        events = build_timeline(
+            mid, offset, first_midi=first_midi, last_midi=last_midi
+        )
         if not events:
             raise ValueError("No playable notes found in this MIDI file.")
 
@@ -774,7 +840,11 @@ class PianoPlayer:
         with self._lock:
             offset = self._led_offset
             count = self._num_leds
-            notes = keys_on_strip(offset, count)
+            first_midi = self._first_midi
+            last_midi = self._last_midi
+            notes = keys_on_strip(
+                offset, count, first_midi=first_midi, last_midi=last_midi
+            )
 
         if not notes:
             raise ValueError("No piano keys map onto the current LED strip.")
@@ -782,7 +852,9 @@ class PianoPlayer:
         events: list[Event] = []
         t = 0.15
         for note in notes:
-            led = midi_to_led(note, offset)
+            led = midi_to_led(
+                note, offset, first_midi=first_midi, last_midi=last_midi
+            )
             if led is None:
                 continue
             events.append(Event(time=t, message_type="ON", led=led, midi_note=note))
@@ -842,7 +914,14 @@ class PianoPlayer:
         """Hold a triad using keys that exist on the current strip."""
         with self._lock:
             offset = self._led_offset
-            notes_available = keys_on_strip(offset, self._num_leds)
+            first_midi = self._first_midi
+            last_midi = self._last_midi
+            notes_available = keys_on_strip(
+                offset,
+                self._num_leds,
+                first_midi=first_midi,
+                last_midi=last_midi,
+            )
 
         if len(notes_available) < 3:
             notes = notes_available
@@ -864,7 +943,12 @@ class PianoPlayer:
         # Slight stagger so each note is its own serial command.
         events: list[Event] = []
         for index, note in enumerate(notes):
-            led = midi_to_led(note, offset) or 0
+            led = (
+                midi_to_led(
+                    note, offset, first_midi=first_midi, last_midi=last_midi
+                )
+                or 0
+            )
             events.append(
                 Event(
                     time=0.20 + index * 0.03,
@@ -874,7 +958,12 @@ class PianoPlayer:
                 )
             )
         for index, note in enumerate(notes):
-            led = midi_to_led(note, offset) or 0
+            led = (
+                midi_to_led(
+                    note, offset, first_midi=first_midi, last_midi=last_midi
+                )
+                or 0
+            )
             events.append(
                 Event(
                     time=1.40 + index * 0.03,
@@ -1053,6 +1142,7 @@ class PianoPlayer:
                 event.led,
                 num_leds=self._num_leds,
                 fold_to_strip=self._fold_to_strip,
+                first_midi=self._first_midi,
             )
 
     def _led_held_by_other(self, midi_note: int, led: int | None) -> bool:

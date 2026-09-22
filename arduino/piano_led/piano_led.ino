@@ -1,7 +1,7 @@
 #include <Adafruit_NeoPixel.h>
 
 #define LED_PIN 5
-#define NUM_LEDS 73
+#define NUM_LEDS 88
 #define LED_BRIGHTNESS 80
 
 // Fallback colours if an ON arrives without RGB (playing = green).
