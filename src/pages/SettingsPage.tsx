@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import Icon from '../components/Icon'
 
 export default function SettingsPage() {
   const [leftColor, setLeftColor] = useState('#7067E8')

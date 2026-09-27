@@ -24,7 +24,7 @@ export default function LibraryPage({
       <section className="app-content min-w-0 space-y-5 lg:p-6 xl:p-8">
         <PlayerCard
           status={player.status}
-          song={library.selected}
+          song={library.selected || null}
           onPlay={() => library.selected && player.play(library.selected.filename)}
           onPause={player.pause}
           onSeek={player.seek}
@@ -39,7 +39,7 @@ export default function LibraryPage({
 
         <div className="grid gap-5 lg:grid-cols-3">
           <TempoCard status={player.status} onTempoChange={player.setTempo} />
-          <InfoCard status={player.status} song={library.selected} />
+          <InfoCard status={player.status} song={library.selected || null} />
         </div>
       </section>
 

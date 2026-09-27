@@ -9,7 +9,7 @@ export function usePlayer() {
 
   // Poll for status updates every 500ms
   useEffect(() => {
-    let interval: NodeJS.Timeout
+    let interval: ReturnType<typeof setInterval>
     const poll = async () => {
       try {
         const newStatus = await apiClient.getStatus()
