@@ -18,24 +18,56 @@ body {
 
 @keyframes countdown-blink {
   0% {
-    opacity: 0.35;
-    transform: scale(0.92);
+    opacity: 0;
+    transform: scale(0.82);
   }
-  18% {
+  25%,
+  68% {
     opacity: 1;
     transform: scale(1);
   }
   100% {
-    opacity: 0.55;
-    transform: scale(0.98);
+    opacity: 0;
+    transform: scale(1.08);
   }
 }
 
 .countdown-blink {
   animation-name: countdown-blink;
   animation-timing-function: ease-out;
-  animation-iteration-count: 1;
   animation-fill-mode: both;
+}
+
+@keyframes beat-column-blink {
+  0% {
+    opacity: 0.35;
+    transform: scaleY(0.45);
+    transform-origin: bottom;
+  }
+  18%,
+  58% {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+  100% {
+    opacity: 0.45;
+    transform: scaleY(0.62);
+    transform-origin: bottom;
+  }
+}
+
+.beat-column-active {
+  animation-name: beat-column-blink;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+  transform-origin: bottom;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .countdown-blink,
+  .beat-column-active {
+    animation: none;
+  }
 }
 
 /* Hide number-input spinners; stepper buttons handle +/- */
@@ -48,4 +80,62 @@ body {
 .tempo-input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+/* Figma volume slider */
+.volume-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(
+    to right,
+    #6458e8 0%,
+    #6458e8 var(--volume, 72%),
+    #e5e7ec var(--volume, 72%),
+    #e5e7ec 100%
+  );
+  outline: none;
+  cursor: pointer;
+}
+
+.volume-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  margin-top: -4px;
+  border-radius: 50%;
+  background: #6458e8;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(23, 32, 51, 0.18);
+  cursor: pointer;
+}
+
+.volume-slider::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: #e5e7ec;
+}
+
+.volume-slider::-moz-range-progress {
+  height: 4px;
+  border-radius: 999px;
+  background: #6458e8;
+}
+
+.volume-slider::-moz-range-thumb {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #6458e8;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(23, 32, 51, 0.18);
+  cursor: pointer;
 }

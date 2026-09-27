@@ -14,6 +14,8 @@ interface PlayerCardProps {
   onResume: () => void
   onSeek: (pos: number) => void
   onSkip: (direction: 1 | -1) => void
+  /** Reports 1-based count-in beat (or null when idle) for tempo-column sync. */
+  onCountInBeatChange?: (beat: number | null) => void
 }
 
 export default function PlayerCard({
@@ -24,6 +26,7 @@ export default function PlayerCard({
   onResume,
   onSeek,
   onSkip,
+  onCountInBeatChange,
 }: PlayerCardProps) {
   const [volume, setVolume] = useState(72)
   /** Remaining beats in the local count-in; null when idle. */
@@ -36,11 +39,18 @@ export default function PlayerCard({
   const timeSignature = timeSignatureLabel(status, song)
   const countInBeat = countdown === null ? null : countInBeats - countdown + 1
   const isPlaying = Boolean(status?.playing && !status?.paused && !status?.counting_in)
+  const onCountInBeatChangeRef = useRef(onCountInBeatChange)
+  onCountInBeatChangeRef.current = onCountInBeatChange
 
   // Clear count-in when the selected song changes.
   useEffect(() => {
     setCountdown(null)
   }, [song?.filename])
+
+  // Keep tempo columns in sync with the local count-in.
+  useEffect(() => {
+    onCountInBeatChangeRef.current?.(countInBeat)
+  }, [countInBeat])
 
   // Advance count-in on the song's beat grid.
   useEffect(() => {
@@ -159,12 +169,13 @@ export default function PlayerCard({
               <Icon name="volume" size={18} />
               <input
                 type="range"
-                min="0"
-                max="100"
+                min={0}
+                max={100}
                 value={volume}
                 onChange={(e) => setVolume(Number(e.target.value))}
-                className="w-full"
+                className="volume-slider w-full"
                 aria-label="Volume"
+                style={{ ['--volume' as string]: `${volume}%` }}
               />
             </div>
 

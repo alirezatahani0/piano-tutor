@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import PlayerCard from '../components/PlayerCard'
 import TempoCard from '../components/TempoCard'
 import InfoCard from '../components/InfoCard'
@@ -20,6 +20,8 @@ export default function LibraryPage({
   libraryCollapsed,
   setLibraryCollapsed,
 }: LibraryPageProps) {
+  const [countInBeat, setCountInBeat] = useState<number | null>(null)
+
   // Keep player preview in sync when library selection changes (including initial load).
   useEffect(() => {
     if (library.selected) {
@@ -45,7 +47,6 @@ export default function LibraryPage({
     void player.selectSong(next)
   }
 
-
   return (
     <>
       <section className="app-content min-w-0 space-y-5 lg:p-6 xl:p-8">
@@ -57,12 +58,18 @@ export default function LibraryPage({
           onResume={player.resume}
           onSeek={player.seek}
           onSkip={handleSkip}
+          onCountInBeatChange={setCountInBeat}
         />
 
         <KeyboardPanel status={player.status} leftColor="#7067E8" rightColor="#ED5B4D" />
 
         <div className="grid gap-5 lg:grid-cols-3">
-          <TempoCard status={player.status} onTempoChange={player.setTempo} />
+          <TempoCard
+            status={player.status}
+            song={library.selected || null}
+            onTempoChange={player.setTempo}
+            countInBeat={countInBeat}
+          />
           <InfoCard status={player.status} song={library.selected || null} />
         </div>
       </section>
