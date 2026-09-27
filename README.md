@@ -48,6 +48,8 @@ Default serial port on macOS is `/dev/cu.usbserial-110` (change in `player.py` o
 
 ## Run the web UI
 
+### Production (Python backend only)
+
 ```bash
 source .venv/bin/activate
 uvicorn server:app --host 127.0.0.1 --port 8000
@@ -59,6 +61,39 @@ Open **http://127.0.0.1:8000**
 2. Pick a piece from the quest log
 3. Optionally set LED color
 4. Play / pause / stop; adjust tempo as needed
+
+### Development (React frontend + Python backend)
+
+Install Node.js dependencies:
+
+```bash
+npm install
+```
+
+Start the development server in one terminal:
+
+```bash
+npm run dev
+```
+
+This runs Vite on **http://localhost:5173** with:
+- Live reloading
+- Proxied API calls to Flask backend (`http://localhost:5000`)
+
+In another terminal, start the Python backend:
+
+```bash
+source .venv/bin/activate
+uvicorn server:app --host 127.0.0.1 --port 5000
+```
+
+### Building for production
+
+```bash
+npm run build
+```
+
+This creates an optimized build in `static/dist/`. When you run the Python backend, it automatically serves the built React app from that directory.
 
 ## CLI playback
 
@@ -72,10 +107,23 @@ python midi_piano.py --port /dev/cu.usbserial-110 path/to/file.mid
 ```text
 archive/                 MIDI library (.mid / .midi)
 arduino/piano_led/       Firmware for the LED strip
-static/                  Web UI (HTML / CSS / JS)
+src/                     React source code (TypeScript + Tailwind)
+  ├── components/        UI components
+  ├── pages/             Page layouts
+  ├── hooks/             Custom React hooks
+  ├── types/             TypeScript types
+  ├── utils/             Utility functions
+  ├── App.tsx            Main app component
+  └── main.tsx           Entry point
+static/                  Static files
+  └── dist/              Vite build output (production)
 player.py                MIDI timeline, serial I/O, playback engine
 server.py                FastAPI + WebSocket API
 midi_piano.py            CLI entrypoint
+package.json             Node.js dependencies
+vite.config.ts           Vite build configuration
+tsconfig.json            TypeScript configuration
+tailwind.config.js       Tailwind CSS configuration
 ```
 
 ## API (high level)
