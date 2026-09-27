@@ -34,6 +34,7 @@ export interface Song {
   key?: string
   bpm?: number
   time_signature?: string
+  beats_per_bar?: number
   duration?: number
   metadata?: Record<string, unknown>
 }

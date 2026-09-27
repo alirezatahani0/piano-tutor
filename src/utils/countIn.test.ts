@@ -38,7 +38,7 @@ const status = (overrides: Partial<PlayerStatus> = {}): PlayerStatus =>
     beats_per_bar: 4,
     counting_in: false,
     count_beat: 0,
-    count_beats: 0,
+    count_beats: 4,
     ...overrides,
   }) as PlayerStatus
 
@@ -50,10 +50,18 @@ describe('beatIntervalMs', () => {
 })
 
 describe('countInBeatsFor', () => {
-  it('prefers active count_beats, then beats_per_bar, then time signature', () => {
-    assert.equal(countInBeatsFor(status({ count_beats: 2 }), song()), 2)
-    assert.equal(countInBeatsFor(status({ beats_per_bar: 5 }), song({ time_signature: '3/4' })), 5)
-    assert.equal(countInBeatsFor(null, song({ time_signature: '6/8' })), 6)
+  it('uses the selected song time signature numerator', () => {
+    assert.equal(countInBeatsFor(status({ count_beats: 4, beats_per_bar: 4 }), song({ time_signature: '2/4' })), 2)
+    assert.equal(countInBeatsFor(status(), song({ time_signature: '3/4' })), 3)
+    assert.equal(countInBeatsFor(status(), song({ time_signature: '4/4' })), 4)
+    assert.equal(countInBeatsFor(status(), song({ time_signature: '6/8' })), 6)
+  })
+
+  it('prefers song signature over stale status count_beats', () => {
+    assert.equal(
+      countInBeatsFor(status({ count_beats: 4, beats_per_bar: 4, time_signature: '4/4' }), song({ time_signature: '2/4' })),
+      2
+    )
   })
 })
 

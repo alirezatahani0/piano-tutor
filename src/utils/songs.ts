@@ -9,6 +9,7 @@ export type ApiSong = {
   key?: string | null
   bpm?: number
   time_signature?: string
+  beats_per_bar?: number
   duration?: number
   metadata?: Record<string, unknown>
   [key: string]: unknown
@@ -20,6 +21,10 @@ export function normalizeSong(raw: ApiSong): Song {
   if (!filename) {
     throw new Error('Song is missing name/filename')
   }
+  const beatsFromSig = (() => {
+    const n = Number(String(raw.time_signature || '').split('/')[0])
+    return Number.isFinite(n) && n > 0 ? n : undefined
+  })()
   return {
     filename,
     title: raw.title || filename,
@@ -27,6 +32,7 @@ export function normalizeSong(raw: ApiSong): Song {
     key: raw.key ?? undefined,
     bpm: raw.bpm,
     time_signature: raw.time_signature,
+    beats_per_bar: raw.beats_per_bar ?? beatsFromSig,
     duration: raw.duration,
     metadata: raw.metadata,
   }
