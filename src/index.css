@@ -37,3 +37,15 @@ body {
   animation-iteration-count: 1;
   animation-fill-mode: both;
 }
+
+/* Hide number-input spinners; stepper buttons handle +/- */
+.tempo-input {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.tempo-input::-webkit-outer-spin-button,
+.tempo-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

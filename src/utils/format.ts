@@ -18,6 +18,12 @@ export function tempoMarking(bpm: number): string {
   return 'Allegro'
 }
 
+/** Display BPM as a whole number (no decimals). */
+export function formatBpm(bpm: number | null | undefined): string {
+  if (bpm == null || !Number.isFinite(Number(bpm))) return '—'
+  return String(Math.round(Number(bpm)))
+}
+
 export function difficultyLabel(filename: string): string {
   // Infer from filename or metadata; defaults based on BPM/complexity
   if (filename.toLowerCase().includes('beginner')) return 'Beginner'

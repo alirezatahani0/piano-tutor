@@ -81,10 +81,17 @@ describe('previewStatusForSong', () => {
 
 describe('mergePolledStatus', () => {
   it('keeps selected song preview when server still reports a different idle file', () => {
-    const merged = mergePolledStatus(baseStatus({ elapsed: 0 }), song)
+    const merged = mergePolledStatus(
+      baseStatus({ elapsed: 0, effective_bpm: 105, tempo_rate: 1.05 }),
+      song
+    )
     assert.equal(merged.title, 'New Song')
     assert.equal(merged.duration, 50)
     assert.equal(merged.elapsed, 0)
+    // Preserve server tempo so +/- steppers don't jump against song.bpm * rate
+    assert.equal(merged.effective_bpm, 105)
+    assert.equal(merged.tempo_rate, 1.05)
+    assert.equal(merged.bpm, 80)
   })
 
   it('does not override an active playback poll', () => {

@@ -12,12 +12,21 @@ export function playbackIsBusy(status: PlayerStatus | null | undefined): boolean
 }
 
 /**
- * Idle UI status for a newly selected song (matches legacy selectFile finishSelect).
- * Keeps device/LED config from `base`, clears playback, and applies song metadata.
+ * Idle UI status for a newly selected song.
+ * `resetTempo` (default true) snaps playback speed back to the song's original BPM.
  */
-export function previewStatusForSong(base: PlayerStatus, song: Song): PlayerStatus {
-  const bpm = song.bpm ?? 120
-  const rate = Number(base.tempo_rate) || 1
+export function previewStatusForSong(
+  base: PlayerStatus,
+  song: Song,
+  options?: { resetTempo?: boolean }
+): PlayerStatus {
+  const songBpm = song.bpm ?? 120
+  const resetTempo = options?.resetTempo ?? true
+  const rate = resetTempo ? 1 : Number(base.tempo_rate) || 1
+  const effective = resetTempo
+    ? songBpm
+    : Number(base.effective_bpm) || songBpm * rate
+
   return {
     ...base,
     playing: false,
@@ -29,14 +38,19 @@ export function previewStatusForSong(base: PlayerStatus, song: Song): PlayerStat
     file: null,
     title: song.title || song.filename,
     duration: song.duration || 0,
-    bpm,
-    effective_bpm: bpm * rate,
+    bpm: songBpm,
+    effective_bpm: effective,
+    tempo_rate: rate,
     key: song.key ?? null,
     time_signature: song.time_signature ?? '4/4',
   }
 }
 
-/** After a status poll, prefer selected-song preview when the server still holds a different file idle. */
+/**
+ * After a status poll, overlay selected-song metadata when the server still
+ * holds a different idle file — but keep the server's tempo_rate / effective_bpm
+ * so tempo steppers don't jump to song.bpm * rate against the wrong base.
+ */
 export function mergePolledStatus(
   polled: PlayerStatus,
   selected: Song | null
@@ -44,5 +58,12 @@ export function mergePolledStatus(
   if (!selected) return polled
   if (polled.playing || polled.paused || polled.counting_in) return polled
   if (polled.file === selected.filename) return polled
-  return previewStatusForSong(polled, selected)
+
+  const preview = previewStatusForSong(polled, selected, { resetTempo: false })
+  return {
+    ...preview,
+    bpm: selected.bpm ?? preview.bpm,
+    effective_bpm: polled.effective_bpm,
+    tempo_rate: polled.tempo_rate,
+  }
 }

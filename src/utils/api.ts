@@ -6,7 +6,7 @@ const API_BASE = '/api'
 
 const client = axios.create({
   baseURL: API_BASE,
-  timeout: 5000,
+  timeout: 30000,
 })
 
 export const apiClient = {
@@ -42,11 +42,13 @@ export const apiClient = {
   },
 
   setTempo: async (bpm: number) => {
-    await client.post('/set-tempo', { bpm })
+    const res = await client.post<PlayerStatus>('/tempo', { bpm })
+    return res.data
   },
 
   setTempoRate: async (rate: number) => {
-    await client.post('/set-tempo-rate', { rate })
+    const res = await client.post<PlayerStatus>('/tempo', { rate })
+    return res.data
   },
 
   // Device

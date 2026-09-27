@@ -1,5 +1,6 @@
 import Icon from './Icon'
 import Cover from './Cover'
+import { formatBpm } from '../utils/format'
 import type { Song } from '../types/api'
 
 interface LibraryItemProps {
@@ -26,7 +27,7 @@ export default function LibraryItem({ song, selected, onSelect }: LibraryItemPro
         </p>
         <p className="mt-1 truncate text-[11px] text-[#9298a5]">{song.artist || '—'}</p>
         <p className="mt-1.5 text-[9px] font-semibold uppercase tracking-wide text-[#9ba1ad]">
-          {song.metadata?.difficulty as string || 'Intermediate'} · {song.bpm || '—'} BPM
+          {song.metadata?.difficulty as string || 'Intermediate'} · {formatBpm(song.bpm)} BPM
         </p>
       </div>
       <span

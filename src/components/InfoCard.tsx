@@ -1,5 +1,5 @@
 import Icon from './Icon'
-import { formatTime } from '../utils/format'
+import { formatBpm, formatTime } from '../utils/format'
 import type { PlayerStatus, Song } from '../types/api'
 
 interface InfoCardProps {
@@ -22,9 +22,9 @@ export default function InfoCard({ status, song }: InfoCardProps) {
       <dl className="mt-5 grid grid-cols-2 gap-x-5 gap-y-5">
         {[
           ['Key', song.key || '—'],
-          ['Original tempo', `${status.bpm} BPM`],
+          ['Original tempo', `${formatBpm(status.bpm)} BPM`],
           ['Duration', formatTime(status.duration || 0)],
-          ['Difficulty', song.metadata?.difficulty as string || 'Intermediate'],
+          ['Difficulty', (song.metadata?.difficulty as string) || 'Intermediate'],
           ['Time signature', status.time_signature || '4/4'],
           ['Hand position', 'Dynamic'],
         ].map(([label, value]) => (
