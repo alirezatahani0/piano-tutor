@@ -18,6 +18,7 @@ from player import (
 
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
+DIST_DIR = STATIC_DIR / "dist"
 
 
 class Hub:
@@ -47,6 +48,7 @@ player = PianoPlayer(on_message=hub.broadcast)
 async def lifespan(_app: FastAPI):
     ARCHIVE_DIR.mkdir(exist_ok=True)
     STATIC_DIR.mkdir(exist_ok=True)
+    DIST_DIR.mkdir(exist_ok=True, parents=True)
     hub.loop = asyncio.get_running_loop()
     yield
     player.stop()
@@ -58,7 +60,7 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 
 class PlayRequest(BaseModel):
-    name: str
+    filename: str
 
 
 class ConnectRequest(BaseModel):
@@ -87,7 +89,8 @@ class ColorRequest(BaseModel):
 
 @app.get("/")
 async def index() -> FileResponse:
-    return FileResponse(STATIC_DIR / "index.html")
+    """Serve the React SPA index.html"""
+    return FileResponse(DIST_DIR / "index.html")
 
 
 @app.get("/api/files")
@@ -177,8 +180,8 @@ async def disconnect() -> dict:
 @app.post("/api/play")
 async def play(body: PlayRequest) -> dict:
     try:
-        resolve_archive_file(body.name)
-        return player.play(body.name)
+        resolve_archive_file(body.filename)
+        return player.play(body.filename)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except Exception as exc:
@@ -248,6 +251,16 @@ async def set_color(body: ColorRequest) -> dict:
         )
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/{path_name:path}")
+async def catch_all(path_name: str) -> FileResponse:
+    """Serve React SPA for any non-API route (client-side routing)"""
+    file_path = DIST_DIR / path_name
+    if file_path.is_file():
+        return FileResponse(file_path)
+    # Fall back to index.html for SPA routing
+    return FileResponse(DIST_DIR / "index.html")
 
 
 @app.websocket("/ws")
