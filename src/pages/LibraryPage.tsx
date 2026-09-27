@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import PlayerCard from '../components/PlayerCard'
 import TempoCard from '../components/TempoCard'
 import InfoCard from '../components/InfoCard'
@@ -19,14 +20,31 @@ export default function LibraryPage({
   libraryCollapsed,
   setLibraryCollapsed,
 }: LibraryPageProps) {
-  // Skip through songs in filtered list
-  const handleSkip = (dir: number) => {
-    const current = library.songs.findIndex(s => s.filename === library.selectedId)
-    if (current >= 0) {
-      const next = library.songs[(current + dir + library.songs.length) % library.songs.length]
-      if (next) library.setSelectedId(next.filename)
+  // Keep player preview in sync when library selection changes (including initial load).
+  useEffect(() => {
+    if (library.selected) {
+      void player.selectSong(library.selected)
     }
+    // selectSong is stable; key off the selected id only.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- avoid re-running on new player object identity
+  }, [library.selectedId, player.selectSong])
+
+  const handleSelect = (filename: string) => {
+    const song = library.songs.find((s) => s.filename === filename)
+    if (!song) return
+    library.setSelectedId(filename)
+    void player.selectSong(song)
   }
+
+  const handleSkip = (dir: number) => {
+    const current = library.songs.findIndex((s) => s.filename === library.selectedId)
+    if (current < 0 || library.songs.length === 0) return
+    const next = library.songs[(current + dir + library.songs.length) % library.songs.length]
+    if (!next) return
+    library.setSelectedId(next.filename)
+    void player.selectSong(next)
+  }
+
 
   return (
     <>
@@ -34,8 +52,9 @@ export default function LibraryPage({
         <PlayerCard
           status={player.status}
           song={library.selected || null}
-          onPlay={() => library.selected && player.play(library.selected.filename)}
+          onPlay={() => library.selected && player.play(library.selected.filename, { countIn: false })}
           onPause={player.pause}
+          onResume={player.resume}
           onSeek={player.seek}
           onSkip={handleSkip}
         />
@@ -51,7 +70,7 @@ export default function LibraryPage({
       <Library
         songs={library.songs}
         selectedId={library.selectedId}
-        onSelect={library.setSelectedId}
+        onSelect={handleSelect}
         search={library.search}
         onSearchChange={library.setSearch}
         difficulty={library.difficulty}

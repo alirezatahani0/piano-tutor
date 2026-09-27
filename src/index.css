@@ -15,3 +15,25 @@ body {
 #root {
   min-height: 100vh;
 }
+
+@keyframes countdown-blink {
+  0% {
+    opacity: 0.35;
+    transform: scale(0.92);
+  }
+  18% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.55;
+    transform: scale(0.98);
+  }
+}
+
+.countdown-blink {
+  animation-name: countdown-blink;
+  animation-timing-function: ease-out;
+  animation-iteration-count: 1;
+  animation-fill-mode: both;
+}

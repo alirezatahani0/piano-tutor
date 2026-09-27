@@ -61,6 +61,7 @@ app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 class PlayRequest(BaseModel):
     filename: str
+    count_in: bool = True
 
 
 class ConnectRequest(BaseModel):
@@ -181,7 +182,7 @@ async def disconnect() -> dict:
 async def play(body: PlayRequest) -> dict:
     try:
         resolve_archive_file(body.filename)
-        return player.play(body.filename)
+        return player.play(body.filename, count_in=body.count_in)
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except Exception as exc:

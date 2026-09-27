@@ -1,5 +1,6 @@
 import axios from 'axios'
-import type { FilesResponse, StatusResponse, SerialPort } from '../types/api'
+import type { StatusResponse, SerialPort, PlayerStatus } from '../types/api'
+import { normalizeSongs, type ApiSong } from './songs'
 
 const API_BASE = '/api'
 
@@ -11,21 +12,29 @@ const client = axios.create({
 export const apiClient = {
   // Song library
   getFiles: async () => {
-    const res = await client.get<FilesResponse>('/files')
-    return res.data.files
+    const res = await client.get<{ files: ApiSong[] }>('/files')
+    return normalizeSongs(res.data.files)
   },
 
   // Player control
-  play: async (filename: string) => {
-    await client.post('/play', { filename })
+  play: async (filename: string, options?: { countIn?: boolean }) => {
+    await client.post('/play', {
+      filename,
+      count_in: options?.countIn ?? false,
+    })
   },
 
   pause: async () => {
     await client.post('/pause')
   },
 
+  resume: async () => {
+    await client.post('/resume')
+  },
+
   stop: async () => {
-    await client.post('/stop')
+    const res = await client.post<PlayerStatus>('/stop')
+    return res.data
   },
 
   seek: async (position: number) => {
@@ -55,9 +64,10 @@ export const apiClient = {
     await client.post('/set-led-color', { color })
   },
 
-  // Status
+  // Status — server returns the status object directly (not wrapped in `{ status }`)
   getStatus: async () => {
-    const res = await client.get<StatusResponse>('/status')
-    return res.data.status
+    const res = await client.get<PlayerStatus | StatusResponse>('/status')
+    const data = res.data
+    return 'status' in data && data.status ? data.status : (data as PlayerStatus)
   },
 }

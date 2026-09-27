@@ -786,7 +786,7 @@ class PianoPlayer:
 
         self._clear_hardware(arduino)
 
-    def play(self, name: str) -> dict:
+    def play(self, name: str, *, count_in: bool = True) -> dict:
         path = resolve_archive_file(name)
         mid = mido.MidiFile(path)
         with self._lock:
@@ -826,7 +826,7 @@ class PianoPlayer:
         self._thread = threading.Thread(
             target=self._run,
             args=(events,),
-            kwargs={"count_in": True},
+            kwargs={"count_in": count_in},
             daemon=True,
             name="midi-playback",
         )
