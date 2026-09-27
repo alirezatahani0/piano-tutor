@@ -19,6 +19,15 @@ export default function LibraryPage({
   libraryCollapsed,
   setLibraryCollapsed,
 }: LibraryPageProps) {
+  // Skip through songs in filtered list
+  const handleSkip = (dir: number) => {
+    const current = library.songs.findIndex(s => s.filename === library.selectedId)
+    if (current >= 0) {
+      const next = library.songs[(current + dir + library.songs.length) % library.songs.length]
+      if (next) library.setSelectedId(next.filename)
+    }
+  }
+
   return (
     <>
       <section className="app-content min-w-0 space-y-5 lg:p-6 xl:p-8">
@@ -28,11 +37,7 @@ export default function LibraryPage({
           onPlay={() => library.selected && player.play(library.selected.filename)}
           onPause={player.pause}
           onSeek={player.seek}
-          onSkip={(dir) => {
-            const current = library.songs.findIndex(s => s.filename === library.selectedId)
-            const next = library.songs[(current + dir + library.songs.length) % library.songs.length]
-            if (next) library.setSelectedId(next.filename)
-          }}
+          onSkip={handleSkip}
         />
 
         <KeyboardPanel status={player.status} leftColor="#7067E8" rightColor="#ED5B4D" />
