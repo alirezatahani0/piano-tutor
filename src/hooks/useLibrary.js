@@ -13,7 +13,7 @@ export function useLibrary() {
             try {
                 const files = await apiClient.getFiles();
                 setSongs(files);
-                if (files.length > 0 && !selectedId) {
+                if (files.length > 0) {
                     setSelectedId(files[0].filename);
                 }
                 setError(null);
