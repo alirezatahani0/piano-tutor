@@ -38,6 +38,8 @@ const keyboard = document.getElementById("keyboard");
 
 let files = [];
 let selected = null;
+let selectQueue = Promise.resolve();
+let playRequestId = 0;
 let status = {
   playing: false,
   paused: false,
@@ -604,6 +606,7 @@ function selectFile(name) {
       count_beat: 0,
       elapsed: 0,
       active_notes: [],
+      error: null,
       bpm: file.bpm ?? 120,
       effective_bpm: (file.bpm ?? 120) * (Number(status.tempo_rate) || 1),
       key: file.key ?? null,
@@ -620,14 +623,22 @@ function selectFile(name) {
     updateTempoUi();
     durationEl.textContent = formatTime(file.duration);
     playBtn.disabled = false;
+    modeEl.textContent = modeMessage();
     renderFiles();
   };
 
   if (switching || busy) {
-    haltPlayback().then(finishSelect);
-    return;
+    selectQueue = selectQueue
+      .then(() => haltPlayback())
+      .then(finishSelect)
+      .catch((error) => {
+        modeEl.textContent = error.message || String(error);
+        finishSelect();
+      });
+    return selectQueue;
   }
   finishSelect();
+  return Promise.resolve();
 }
 
 async function haltPlayback() {
@@ -732,9 +743,6 @@ function applyStatus(next) {
   if (status.file && !selected) {
     selected = status.file;
   }
-  if (status.title) {
-    nowTitle.textContent = status.title;
-  }
   if (status.counting_in) {
     nowLabel.textContent = status.paused ? "Count in paused" : "Count in";
     if (status.count_beat) showCountIn(status.count_beat);
@@ -758,11 +766,21 @@ function applyStatus(next) {
       status.duration = file.duration || status.duration;
       status.events = file.events || status.events;
       status.title = file.title || file.name;
+      status.elapsed = 0;
       status.effective_bpm =
         (Number(status.bpm) || 120) * (Number(status.tempo_rate) || 1);
     }
   } else {
     hideCountIn();
+  }
+
+  if (status.playing || status.paused || status.counting_in) {
+    if (status.title) nowTitle.textContent = status.title;
+  } else if (selected) {
+    const file = files.find((item) => item.name === selected);
+    nowTitle.textContent = (file && (file.title || file.name)) || status.title || selected;
+  } else if (status.title) {
+    nowTitle.textContent = status.title;
   }
 
   elapsedEl.textContent = formatTime(status.elapsed);
@@ -809,10 +827,20 @@ function connectSocket() {
     } else if (message.type === "note") {
       handleNote(message);
     } else if (message.type === "done") {
+      // Ignore stale "done" if a newer play already started on the server.
+      if (status.playing && status.file && status.file === selected) {
+        return;
+      }
       hideCountIn();
       stopAllVoices();
       lastMetronomeBeat = -1;
-      applyStatus({ playing: false, paused: false, counting_in: false, count_beat: 0 });
+      applyStatus({
+        playing: false,
+        paused: false,
+        counting_in: false,
+        count_beat: 0,
+        error: null,
+      });
       clearNotes();
     } else if (message.type === "error") {
       modeEl.textContent = message.message;
@@ -857,14 +885,20 @@ playBtn.addEventListener("click", async () => {
   if (!selected) return;
   getAudio();
   try {
-    if (status.playing && status.paused) {
+    await selectQueue;
+    const sameSong = status.file === selected;
+    if (status.playing && status.paused && sameSong) {
       applyStatus(await api("/api/resume", { method: "POST", body: "{}" }));
       return;
     }
-    if (status.playing) {
+    if (status.playing && sameSong) {
       return;
     }
-    applyStatus(await api("/api/play", { method: "POST", body: JSON.stringify({ name: selected }) }));
+    const requestId = ++playRequestId;
+    applyStatus(
+      await api("/api/play", { method: "POST", body: JSON.stringify({ name: selected }) })
+    );
+    if (requestId !== playRequestId) return;
   } catch (error) {
     modeEl.textContent = error.message;
   }

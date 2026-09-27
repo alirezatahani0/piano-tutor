@@ -804,7 +804,7 @@ class PianoPlayer:
         title = path.stem
         meta = extract_midi_meta(mid)
 
-        self.stop()
+        self.stop(emit_done=False)
 
         with self._lock:
             self._stop.clear()
@@ -867,7 +867,7 @@ class PianoPlayer:
         last = midi_note_name(notes[-1])
         title = f"Key walk {first} → {last}"
 
-        self.stop()
+        self.stop(emit_done=False)
 
         with self._lock:
             previous_fold = self._fold_to_strip
@@ -973,7 +973,7 @@ class PianoPlayer:
                 )
             )
 
-        self.stop()
+        self.stop(emit_done=False)
         with self._lock:
             self._stop.clear()
             self._playing = True
@@ -1023,7 +1023,7 @@ class PianoPlayer:
             self._paused = False
         self._emit({"type": "status", **self.status()})
 
-    def stop(self) -> None:
+    def stop(self, *, emit_done: bool = True) -> None:
         self._stop.set()
         thread = self._thread
         if thread is not None and thread.is_alive() and thread is not threading.current_thread():
@@ -1040,6 +1040,7 @@ class PianoPlayer:
             self._count_beats = 0
             self._frozen_elapsed = 0.0
             self._thread = None
+            self._error = None
 
         for event in active:
             self._emit(
@@ -1053,7 +1054,8 @@ class PianoPlayer:
             )
 
         self._clear_hardware(arduino)
-        self._emit({"type": "done"})
+        if emit_done:
+            self._emit({"type": "done"})
         self._emit({"type": "status", **self.status()})
 
     def _wait_wall(self, seconds: float) -> bool:
@@ -1158,6 +1160,7 @@ class PianoPlayer:
                     active.led,
                     num_leds=self._num_leds,
                     fold_to_strip=self._fold_to_strip,
+                    first_midi=self._first_midi,
                 )
                 if other == led:
                     return True

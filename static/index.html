@@ -3,201 +3,321 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Piano LED · Neon Practice</title>
+    <title>Piano LED · Practice</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700&family=Rajdhani:wght@500;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="/static/styles.css" />
     <link
       rel="icon"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='4' fill='%23070b14'/><circle cx='8' cy='8' r='4' fill='%23ff3d71'/></svg>"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='4' fill='%236458e8'/><rect x='4' y='7' width='1.5' height='5' rx='.75' fill='white'/><rect x='6.5' y='4' width='1.5' height='8' rx='.75' fill='white'/><rect x='9' y='6' width='1.5' height='6' rx='.75' fill='white'/><rect x='11.5' y='3' width='1.5' height='9' rx='.75' fill='white'/></svg>"
     />
   </head>
-  <body>
-    <div class="atmosphere" aria-hidden="true"></div>
-    <div class="app">
-      <aside class="archive glass">
-        <header class="archive-head">
-          <div class="player-card">
-            <div class="avatar-ring" aria-hidden="true">
-              <span id="rank-badge">C</span>
-            </div>
-            <div class="player-meta">
-              <p class="eyebrow">Pilot</p>
-              <p id="rank-title" class="rank-title">Cadet</p>
-              <div class="xp-bar" title="Experience">
-                <div id="xp-fill" class="xp-fill"></div>
-              </div>
-              <p class="xp-label">
-                Lv <span id="level-num">1</span>
-                · <span id="xp-text">0</span> XP
-              </p>
-            </div>
-          </div>
-          <div class="stat-chips">
-            <div class="chip">
-              <span class="chip-label">Streak</span>
-              <span id="streak-num" class="chip-value">0</span>
-            </div>
-            <div class="chip">
-              <span class="chip-label">Runs</span>
-              <span id="runs-num" class="chip-value">0</span>
-            </div>
-          </div>
-          <h1>Quest Log</h1>
-          <label class="search">
-            <span class="sr-only">Search MIDI files</span>
-            <input id="search" type="search" placeholder="Find a quest…" autocomplete="off" />
-          </label>
-        </header>
-        <ul id="file-list" class="file-list"></ul>
-        <footer class="archive-foot">
-          <label class="upload">
-            <input id="upload" type="file" accept=".mid,.midi,audio/midi" hidden />
-            <span class="upload-mark">+</span>
-            Import MIDI
-          </label>
-        </footer>
-      </aside>
+  <body data-page="library">
+    <!-- Icon sprite (paths from the Keylight Figma Make design) -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs>
+        <symbol id="i-library" viewBox="0 0 24 24"><path d="M4 19.5V5.7A1.7 1.7 0 0 1 5.7 4H19v15.5H6.3A2.3 2.3 0 0 0 4 21.8" /><path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H19" /><path d="M8 8h7M8 12h5" /></symbol>
+        <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-1.6v-.2h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z" /></symbol>
+        <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" /></symbol>
+        <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol>
+        <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5 1.1-1.1a5.5 5.5 0 0 0-.1-7.8Z" /></symbol>
+        <symbol id="i-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7V5Z" /></symbol>
+        <symbol id="i-pause" viewBox="0 0 24 24"><path d="M9 5v14M15 5v14" /></symbol>
+        <symbol id="i-back" viewBox="0 0 24 24"><path d="M6 5v14" /><path d="m18 6-9 6 9 6V6Z" /></symbol>
+        <symbol id="i-forward" viewBox="0 0 24 24"><path d="M18 5v14" /><path d="m6 6 9 6-9 6V6Z" /></symbol>
+        <symbol id="i-volume" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4V5ZM15 9a4 4 0 0 1 0 6M18 6a8 8 0 0 1 0 12" /></symbol>
+        <symbol id="i-muted" viewBox="0 0 24 24"><path d="M11 5 6 9H3v6h3l5 4V5ZM16 9l5 6M21 9l-5 6" /></symbol>
+        <symbol id="i-metronome" viewBox="0 0 24 24"><path d="M8 20h8l-2-16h-4L8 20Z" /><path d="m12 7 4-3M10 15h4" /></symbol>
+        <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7h.01" /></symbol>
+        <symbol id="i-usb" viewBox="0 0 24 24"><path d="M12 3v14M9 6l3-3 3 3M7 11v2l5 3 5-3v-3M12 17a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" /></symbol>
+        <symbol id="i-sparkle" viewBox="0 0 24 24"><path d="m12 3 1.2 4.3L17 9l-3.8 1.7L12 15l-1.2-4.3L7 9l3.8-1.7L12 3Z" /><path d="m18.5 15 .6 2.1 1.9.9-1.9.9-.6 2.1-.6-2.1L16 18l1.9-.9.6-2.1Z" /></symbol>
+        <symbol id="i-stop" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" /></symbol>
+        <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></symbol>
+      </defs>
+    </svg>
 
-      <main class="stage">
-        <header class="topbar">
-          <div class="brand">
-            <p class="brand-mark">Neon Arena</p>
-            <h1 class="brand-title">Piano LED</h1>
-            <p class="tagline">Light-guided practice · Alesis Q49</p>
-          </div>
-          <div class="hud-combo glass" aria-live="polite">
-            <p class="combo-label">Combo</p>
-            <p id="combo-num" class="combo-num">0</p>
-            <p id="combo-mult" class="combo-mult">×1.0</p>
-          </div>
-          <div class="arduino glass">
-            <label class="field">
-              <span class="field-label">Preset</span>
-              <select id="preset">
-                <option value="q49">Alesis Q49 (49 keys)</option>
-                <option value="ydp145">Yamaha YDP-145 (88 keys)</option>
-                <option value="test-8">8 keys after skip</option>
-              </select>
-            </label>
-            <label class="field">
-              <span class="field-label">Port</span>
-              <select id="port"></select>
-            </label>
-            <button id="connect" type="button" class="ghost">Connect</button>
-            <span id="arduino-state" class="state" data-on="false">Offline</span>
-          </div>
-        </header>
+    <aside id="sidebar" class="sidebar" data-collapsed="true">
+      <div class="brand">
+        <div class="brand-logo" aria-hidden="true">
+          <span style="height: 10px"></span><span style="height: 16px"></span><span style="height: 12px"></span><span style="height: 20px"></span>
+        </div>
+        <span class="brand-name">Piano LED</span>
+      </div>
+      <button id="sidebar-toggle" class="edge-toggle sidebar-toggle" type="button" aria-label="Expand sidebar" title="Expand sidebar">
+        <svg class="icon" width="15" height="15"><use href="#i-chevron" /></svg>
+      </button>
 
-        <section class="now">
-          <div class="now-copy">
-            <p id="now-label" class="eyebrow">Ready</p>
-            <h2 id="now-title">Choose a quest</h2>
-            <div id="count-in" class="count-in" hidden aria-live="assertive">
-              <span class="count-ring"></span>
-              <span id="count-num">1</span>
-            </div>
-            <p id="now-meta" class="meta">
-              Pick a piece from the quest log. Keys light green when they play.
-            </p>
-          </div>
-          <dl id="song-info" class="song-info glass" hidden>
-            <div>
-              <dt>Key</dt>
-              <dd id="info-key">—</dd>
-            </div>
-            <div>
-              <dt>Tempo</dt>
-              <dd id="info-tempo">—</dd>
-            </div>
-            <div>
-              <dt>Meter</dt>
-              <dd id="info-meter">—</dd>
-            </div>
-            <div>
-              <dt>Length</dt>
-              <dd id="info-length">—</dd>
-            </div>
-          </dl>
-        </section>
+      <nav class="nav" aria-label="Primary navigation">
+        <button type="button" class="nav-item" data-nav="library" title="Song library">
+          <svg class="icon" width="19" height="19"><use href="#i-library" /></svg>
+          <span class="nav-label">Song library</span>
+        </button>
+        <button type="button" class="nav-item" data-nav="settings" title="Device settings">
+          <svg class="icon" width="19" height="19"><use href="#i-settings" /></svg>
+          <span class="nav-label">Device settings</span>
+        </button>
+      </nav>
 
-        <section class="transport glass" aria-label="Playback">
-          <div class="progress-wrap">
-            <input id="progress" type="range" min="0" max="1000" value="0" disabled />
-            <div class="times">
-              <span id="elapsed">0:00</span>
-              <span id="session-xp" class="session-xp">+0 XP</span>
-              <span id="duration">0:00</span>
-            </div>
+      <div class="sidebar-foot">
+        <div class="promo">
+          <div class="promo-icon"><svg class="icon" width="17" height="17"><use href="#i-sparkle" /></svg></div>
+          <p class="promo-title">Practice smarter</p>
+          <p class="promo-copy">Slow the tempo down, turn on the metronome, and follow the lights.</p>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="topbar-brand">
+          <div class="brand-logo" aria-hidden="true">
+            <span style="height: 10px"></span><span style="height: 16px"></span><span style="height: 12px"></span><span style="height: 20px"></span>
           </div>
-          <div class="tempo-row">
-            <div class="tempo-control">
-              <span class="tempo-label">Tempo</span>
-              <div class="tempo-stepper">
-                <input
-                  id="tempo"
-                  type="number"
-                  inputmode="numeric"
-                  min="1"
-                  step="1"
-                  value="120"
-                  disabled
-                  aria-label="Tempo in BPM"
-                />
-                <span class="tempo-unit">BPM</span>
-                <div class="tempo-buttons">
-                  <button id="tempo-minus" type="button" class="ghost tempo-btn" disabled aria-label="Decrease tempo">
-                    −
-                  </button>
-                  <button id="tempo-plus" type="button" class="ghost tempo-btn" disabled aria-label="Increase tempo">
-                    +
-                  </button>
+          <span>Piano LED</span>
+        </div>
+        <div class="topbar-title">
+          <h1 id="page-title">Good afternoon</h1>
+          <p id="page-subtitle">Ready for your next practice?</p>
+        </div>
+        <div class="device-pill" data-on="false">
+          <span class="dot"></span>
+          <span id="device-name" class="device-name">Alesis Q49</span>
+          <span id="arduino-state" class="state" data-on="false">Offline</span>
+          <svg class="icon" width="14" height="14"><use href="#i-usb" /></svg>
+        </div>
+      </header>
+
+      <div id="workspace" class="workspace" data-library-collapsed="true">
+        <section class="content">
+          <!-- Library page -->
+          <div class="page page-library">
+            <article class="card now-card">
+              <div class="now-row">
+                <div id="now-cover" class="cover cover-lg" aria-hidden="true"></div>
+                <div class="now-body">
+                  <div class="now-head">
+                    <div class="now-copy">
+                      <span id="now-label" class="badge badge-violet">Ready</span>
+                      <h2 id="now-title">Choose a piece</h2>
+                      <p id="now-meta" class="now-meta">Pick a piece from the song library. Keys light up as they play.</p>
+                    </div>
+                    <button id="favorite" type="button" class="icon-btn favorite" aria-pressed="false" aria-label="Toggle favorite" disabled>
+                      <svg class="icon" width="21" height="21"><use href="#i-heart" /></svg>
+                    </button>
+                  </div>
+
+                  <div class="progress-block">
+                    <input id="progress" class="progress" type="range" min="0" max="1000" value="0" disabled aria-label="Song progress" />
+                    <div class="times">
+                      <span id="elapsed">0:00</span>
+                      <span id="duration">0:00</span>
+                    </div>
+                  </div>
+
+                  <div class="transport">
+                    <div class="volume">
+                      <button id="mute" type="button" class="icon-btn-plain" aria-pressed="false" aria-label="Mute preview sound" title="Sound on">
+                        <svg class="icon icon-on" width="18" height="18"><use href="#i-volume" /></svg>
+                        <svg class="icon icon-off" width="18" height="18"><use href="#i-muted" /></svg>
+                      </button>
+                      <input id="volume" class="volume-slider" type="range" min="0" max="100" value="72" aria-label="Volume" />
+                    </div>
+                    <div class="transport-main">
+                      <button id="stop" type="button" class="icon-btn-plain" aria-label="Stop" title="Stop" disabled>
+                        <svg class="icon" width="17" height="17"><use href="#i-stop" /></svg>
+                      </button>
+                      <button id="prev" type="button" class="icon-btn-plain" aria-label="Previous piece" title="Previous piece">
+                        <svg class="icon" width="21" height="21"><use href="#i-back" /></svg>
+                      </button>
+                      <button id="play" type="button" class="play-btn" aria-label="Play" disabled>
+                        <svg class="icon filled" width="23" height="23"><use href="#i-play" /></svg>
+                      </button>
+                      <button id="pause" type="button" class="play-btn" aria-label="Pause" disabled>
+                        <svg class="icon" width="23" height="23"><use href="#i-pause" /></svg>
+                      </button>
+                      <button id="next" type="button" class="icon-btn-plain" aria-label="Next piece" title="Next piece">
+                        <svg class="icon" width="21" height="21"><use href="#i-forward" /></svg>
+                      </button>
+                      <span class="transport-spacer" aria-hidden="true"></span>
+                    </div>
+                    <div class="transport-end">
+                      <span class="led-badge"><i class="led-dot"></i>LED GUIDE</span>
+                    </div>
+                  </div>
                 </div>
               </div>
+
+              <div class="keyboard-panel">
+                <div id="led-strip" class="led-strip" aria-hidden="true"></div>
+                <div id="keyboard" class="keyboard" role="img" aria-label="Piano keyboard"></div>
+                <div id="count-in" class="count-in" hidden aria-live="assertive">
+                  <span id="count-num">1</span>
+                </div>
+              </div>
+              <p id="mode" class="mode">Alesis Q49 · skip LED 0–23 · LED 24 = C2 … LED 72 = C6</p>
+            </article>
+
+            <div class="card-grid">
+              <article class="card tempo-card">
+                <div class="card-head">
+                  <span class="card-icon violet"><svg class="icon" width="20" height="20"><use href="#i-metronome" /></svg></span>
+                  <h2>Tempo</h2>
+                </div>
+                <span id="tempo-marking" class="badge badge-green tempo-marking">Moderato</span>
+                <div class="tempo-row">
+                  <div class="tempo-value">
+                    <input
+                      id="tempo"
+                      type="number"
+                      inputmode="numeric"
+                      min="1"
+                      step="1"
+                      value="120"
+                      disabled
+                      aria-label="Tempo in BPM"
+                    />
+                    <span class="tempo-unit">BPM</span>
+                  </div>
+                  <div class="stepper">
+                    <button id="tempo-plus" type="button" class="step-btn" disabled aria-label="Increase tempo">+</button>
+                    <button id="tempo-minus" type="button" class="step-btn" disabled aria-label="Decrease tempo">−</button>
+                  </div>
+                </div>
+                <div class="tempo-foot">
+                  <p id="tempo-original" class="fine">Original tempo: —</p>
+                  <div class="tempo-actions">
+                    <button id="tempo-reset" type="button" class="chip-btn" disabled>Reset</button>
+                    <button id="metronome" type="button" class="chip-btn" aria-pressed="false">Metronome off</button>
+                  </div>
+                </div>
+              </article>
+
+              <article class="card info-card">
+                <div class="card-head">
+                  <span class="card-icon muted"><svg class="icon" width="19" height="19"><use href="#i-info" /></svg></span>
+                  <h2>Song information</h2>
+                </div>
+                <dl id="song-info" class="info-grid" hidden>
+                  <div><dt>Key</dt><dd id="info-key">—</dd></div>
+                  <div><dt>Tempo</dt><dd id="info-tempo">—</dd></div>
+                  <div><dt>Time signature</dt><dd id="info-meter">—</dd></div>
+                  <div><dt>Duration</dt><dd id="info-length">—</dd></div>
+                  <div><dt>Tracks</dt><dd id="info-tracks">—</dd></div>
+                  <div><dt>LED events</dt><dd id="info-events">—</dd></div>
+                </dl>
+              </article>
             </div>
-            <button id="tempo-reset" type="button" class="ghost" disabled>Reset</button>
-            <button id="metronome" type="button" class="ghost" aria-pressed="false">
-              Metronome off
-            </button>
-            <label class="color-control" title="LED color">
-              <span class="tempo-label">LED</span>
-              <input id="led-color" type="color" value="#00dc28" aria-label="LED color" />
-            </label>
           </div>
-          <div class="controls">
-            <button id="play" type="button" class="primary" disabled>Play</button>
-            <button id="pause" type="button" class="ghost" disabled>Pause</button>
-            <button id="stop" type="button" class="ghost" disabled>Stop</button>
-            <button id="mute" type="button" class="ghost" aria-pressed="false">Sound on</button>
-            <span class="controls-divider" aria-hidden="true"></span>
-            <button id="walk" type="button" class="ghost">Key walk</button>
-            <button id="chord" type="button" class="ghost">Chord test</button>
+
+          <!-- Settings page -->
+          <div class="page page-settings">
+            <article class="card">
+              <div class="settings-head">
+                <div>
+                  <span class="eyebrow">Connected device</span>
+                  <h2 id="settings-device" class="settings-title">Alesis Q49</h2>
+                  <p class="fine-lg">Choose your keyboard layout and the Arduino serial port driving the LED strip.</p>
+                </div>
+                <span class="status-badge" data-on="false"><i></i><span class="status-text">Offline</span></span>
+              </div>
+              <div class="device-form">
+                <label class="field">
+                  <span class="field-label">Keyboard preset</span>
+                  <select id="preset">
+                    <option value="q49">Alesis Q49 (49 keys)</option>
+                    <option value="ydp145">Yamaha YDP-145 (88 keys)</option>
+                    <option value="test-8">8 keys after skip</option>
+                  </select>
+                </label>
+                <label class="field">
+                  <span class="field-label">Serial port</span>
+                  <select id="port"></select>
+                </label>
+                <button id="connect" type="button" class="primary-btn">Connect</button>
+              </div>
+              <p id="map-legend" class="map-legend"></p>
+            </article>
+
+            <article class="card">
+              <div class="settings-head">
+                <div>
+                  <h2 class="card-title">LED guide color</h2>
+                  <p class="fine-lg">The color keys light up as they play. Changes reach the strip instantly.</p>
+                </div>
+                <span class="badge badge-green live">Live</span>
+              </div>
+              <div class="color-panel">
+                <div class="color-panel-head">
+                  <span class="color-panel-title">Playing notes</span>
+                  <span class="color-hex"><i class="led-dot"></i><span id="led-hex">#00DC28</span></span>
+                </div>
+                <div id="swatches" class="swatches"></div>
+                <label class="custom-color">
+                  <span>
+                    <span class="custom-title">Custom color</span>
+                    <span class="custom-sub">Choose any LED color</span>
+                  </span>
+                  <span class="color-well">
+                    <input id="led-color" type="color" value="#00dc28" aria-label="Custom LED color" />
+                  </span>
+                </label>
+              </div>
+            </article>
+
+            <article class="card">
+              <div class="settings-head">
+                <div>
+                  <h2 class="card-title">Diagnostics</h2>
+                  <p class="fine-lg">Check the wiring: walk every LED in order, or flash a test chord.</p>
+                </div>
+              </div>
+              <div class="diag-actions">
+                <button id="walk" type="button" class="secondary-btn">Key walk</button>
+                <button id="chord" type="button" class="secondary-btn">Chord test</button>
+              </div>
+            </article>
           </div>
-          <p id="mode" class="mode">Alesis Q49 · skip LED 0–23 · LED 24 = C2 … LED 72 = C6</p>
         </section>
 
-        <section class="instrument" aria-label="Piano visualization">
-          <div class="instrument-head">
-            <div>
-              <p class="eyebrow">Live surface</p>
-              <p class="color-legend" aria-hidden="true">
-                <span class="swatch now"></span> playing
-              </p>
+        <aside id="library" class="library">
+          <button id="library-toggle" class="edge-toggle library-toggle" type="button" aria-label="Expand song library" title="Expand song library">
+            <svg class="icon" width="15" height="15"><use href="#i-chevron" /></svg>
+          </button>
+          <div class="library-rail">
+            <svg class="icon" width="21" height="21"><use href="#i-library" /></svg>
+            <span class="rail-label">Song library</span>
+            <span id="rail-count" class="rail-count">0</span>
+          </div>
+          <div class="library-panel">
+            <div class="library-head">
+              <h2>Song library</h2>
+              <p id="library-count">0 songs ready to learn</p>
+              <label class="search">
+                <svg class="icon" width="17" height="17"><use href="#i-search" /></svg>
+                <span class="sr-only">Search MIDI files</span>
+                <input id="search" type="search" placeholder="Search songs" autocomplete="off" />
+              </label>
+              <select id="filter" class="filter" aria-label="Filter songs">
+                <option value="all">All pieces</option>
+                <option value="favorites">Favorites</option>
+              </select>
             </div>
-            <p id="map-legend" class="map-legend"></p>
+            <ul id="file-list" class="file-list"></ul>
+            <footer class="library-foot">
+              <label class="upload">
+                <input id="upload" type="file" accept=".mid,.midi,audio/midi" hidden />
+                <svg class="icon" width="16" height="16"><use href="#i-plus" /></svg>
+                Import MIDI
+              </label>
+            </footer>
           </div>
-          <div class="keyboard-wrap glass">
-            <div id="led-strip" class="led-strip" aria-hidden="true"></div>
-            <div id="keyboard" class="keyboard" role="img" aria-label="Alesis Q49 49-key keyboard"></div>
-          </div>
-        </section>
-      </main>
-    </div>
-    <div id="toast" class="toast" hidden></div>
+        </aside>
+      </div>
+    </main>
     <script src="/static/app.js" type="module"></script>
   </body>
 </html>
