@@ -22,6 +22,20 @@ STATIC_DIR = Path(__file__).resolve().parent / "static"
 DIST_DIR = STATIC_DIR / "dist"
 
 
+def ensure_dir(path: Path) -> None:
+    """Create a directory when the filesystem allows it.
+
+    Serverless runtimes (Lambda/Vercel) mount the app as read-only under
+    `/var/task`, so mkdir raises EROFS. Packaged dirs are used as-is.
+    """
+    try:
+        path.mkdir(exist_ok=True, parents=True)
+    except OSError:
+        if not path.is_dir():
+            # Missing and not creatable — leave it; callers handle absence.
+            return
+
+
 class Hub:
     def __init__(self) -> None:
         self.loop: asyncio.AbstractEventLoop | None = None
@@ -47,9 +61,9 @@ player = PianoPlayer(on_message=hub.broadcast)
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    ARCHIVE_DIR.mkdir(exist_ok=True)
-    STATIC_DIR.mkdir(exist_ok=True)
-    DIST_DIR.mkdir(exist_ok=True, parents=True)
+    ensure_dir(ARCHIVE_DIR)
+    ensure_dir(STATIC_DIR)
+    ensure_dir(DIST_DIR)
     hub.loop = asyncio.get_running_loop()
     yield
     player.stop()
@@ -135,9 +149,14 @@ async def upload(file: UploadFile = File(...)) -> dict:
     if Path(filename).suffix.lower() not in {".mid", ".midi"}:
         raise HTTPException(status_code=400, detail="Please upload a .mid or .midi file.")
 
-    ARCHIVE_DIR.mkdir(exist_ok=True)
+    ensure_dir(ARCHIVE_DIR)
+    if not ARCHIVE_DIR.is_dir():
+        raise HTTPException(status_code=503, detail="Upload unavailable: archive directory is not writable.")
     destination = ARCHIVE_DIR / filename
-    destination.write_bytes(await file.read())
+    try:
+        destination.write_bytes(await file.read())
+    except OSError as exc:
+        raise HTTPException(status_code=503, detail="Upload unavailable on this host.") from exc
 
     try:
         return inspect_midi(destination)

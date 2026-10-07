@@ -251,14 +251,24 @@ def is_midi_file(path: Path) -> bool:
     return path.is_file() and path.suffix.lower() in MIDI_SUFFIXES
 
 
+def _ensure_archive_dir() -> None:
+    """Best-effort create; read-only deploys already ship `archive/`."""
+    try:
+        ARCHIVE_DIR.mkdir(exist_ok=True)
+    except OSError:
+        pass
+
+
 def list_archive_files() -> list[Path]:
-    ARCHIVE_DIR.mkdir(exist_ok=True)
+    _ensure_archive_dir()
+    if not ARCHIVE_DIR.is_dir():
+        return []
     files = [path for path in ARCHIVE_DIR.iterdir() if is_midi_file(path)]
     return sorted(files, key=lambda path: path.name.lower())
 
 
 def resolve_archive_file(name: str) -> Path:
-    ARCHIVE_DIR.mkdir(exist_ok=True)
+    _ensure_archive_dir()
     candidate = Path(name).name
     path = (ARCHIVE_DIR / candidate).resolve()
     archive = ARCHIVE_DIR.resolve()
