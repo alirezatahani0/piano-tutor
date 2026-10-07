@@ -61,9 +61,8 @@ player = PianoPlayer(on_message=hub.broadcast)
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    ensure_dir(ARCHIVE_DIR)
-    ensure_dir(STATIC_DIR)
-    ensure_dir(DIST_DIR)
+    # Do not mkdir here — Vercel/Lambda mount `/var/task` read-only.
+    # Local dirs are created on demand by upload / player helpers.
     hub.loop = asyncio.get_running_loop()
     yield
     player.stop()
@@ -77,11 +76,14 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://localhost:5173",
     ],
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+# Only mount when the packaged directory exists (read-only deploys).
+if STATIC_DIR.is_dir():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 
 class PlayRequest(BaseModel):
@@ -113,10 +115,20 @@ class ColorRequest(BaseModel):
     rgb: list[int] | None = None
 
 
+def _spa_index() -> FileResponse:
+    index = DIST_DIR / "index.html"
+    if not index.is_file():
+        raise HTTPException(
+            status_code=503,
+            detail="Frontend build missing. Run `npm run build` so static/dist is packaged.",
+        )
+    return FileResponse(index)
+
+
 @app.get("/")
 async def index() -> FileResponse:
     """Serve the React SPA index.html"""
-    return FileResponse(DIST_DIR / "index.html")
+    return _spa_index()
 
 
 @app.get("/api/files")
@@ -290,8 +302,7 @@ async def catch_all(path_name: str) -> FileResponse:
     file_path = DIST_DIR / path_name
     if file_path.is_file():
         return FileResponse(file_path)
-    # Fall back to index.html for SPA routing
-    return FileResponse(DIST_DIR / "index.html")
+    return _spa_index()
 
 
 @app.websocket("/ws")
