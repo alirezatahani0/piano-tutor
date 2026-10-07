@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { usePlayer } from './hooks/usePlayer'
 import { useLibrary } from './hooks/useLibrary'
+import { useNotePreview } from './hooks/useNotePreview'
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
 import LibraryPage from './pages/LibraryPage'
@@ -13,6 +14,8 @@ export default function App() {
 
   const player = usePlayer()
   const library = useLibrary()
+  // Soft Web Audio preview of MIDI notes (LEDs are separate / need Arduino).
+  useNotePreview(activePage === 'library')
 
   return (
     <div className="min-h-screen bg-[#f6f7f9] text-[#172033]">

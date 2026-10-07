@@ -1,14 +1,9 @@
 import type { PlayerStatus, Song } from '../types/api'
 
-/** True when the player has active or leftover playback state that must be cleared. */
+/** True when playback is active and must be stopped before switching songs. */
 export function playbackIsBusy(status: PlayerStatus | null | undefined): boolean {
   if (!status) return false
-  return Boolean(
-    status.playing ||
-      status.paused ||
-      status.counting_in ||
-      Number(status.elapsed) > 0
-  )
+  return Boolean(status.playing || status.paused || status.counting_in)
 }
 
 /**

@@ -18,6 +18,8 @@ export function usePlayer() {
   const selectedSongRef = useRef<Song | null>(null)
   const statusRef = useRef<PlayerStatus | null>(null)
   const selectQueueRef = useRef<Promise<void>>(Promise.resolve())
+  /** Bumps on every select/play so a stale stop() cannot clobber newer playback. */
+  const playbackEpochRef = useRef(0)
   /** Integer BPM shown in the UI; polls must not overwrite this with float server math. */
   const tempoBpmRef = useRef<number | null>(null)
 
@@ -38,14 +40,21 @@ export function usePlayer() {
     }
   }, [])
 
+  const commitStatus = useCallback(
+    (raw: PlayerStatus) => {
+      const merged = mergePolledStatus(raw, selectedSongRef.current)
+      setStatus(applyTempoOverlay(merged))
+    },
+    [applyTempoOverlay]
+  )
+
   // Poll for status updates every 500ms
   useEffect(() => {
     let interval: ReturnType<typeof setInterval>
     const poll = async () => {
       try {
         const newStatus = await apiClient.getStatus()
-        const merged = mergePolledStatus(newStatus, selectedSongRef.current)
-        setStatus(applyTempoOverlay(merged))
+        commitStatus(newStatus)
         setError(null)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Status update failed')
@@ -57,40 +66,48 @@ export function usePlayer() {
     poll()
     interval = setInterval(poll, 500)
     return () => clearInterval(interval)
-  }, [applyTempoOverlay])
+  }, [commitStatus])
 
   const play = useCallback(async (filename: string, options?: { countIn?: boolean }) => {
+    const epoch = ++playbackEpochRef.current
     try {
-      await apiClient.play(filename, options)
+      const next = await apiClient.play(filename, options)
+      if (playbackEpochRef.current !== epoch) return
+      setStatus(applyTempoOverlay(next))
+      setError(null)
     } catch (err) {
+      if (playbackEpochRef.current !== epoch) return
       setError(err instanceof Error ? err.message : 'Play failed')
     }
-  }, [])
+  }, [applyTempoOverlay])
 
   const pause = useCallback(async () => {
     try {
-      await apiClient.pause()
+      const next = await apiClient.pause()
+      setStatus(applyTempoOverlay(next))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Pause failed')
     }
-  }, [])
+  }, [applyTempoOverlay])
 
   const resume = useCallback(async () => {
     try {
-      await apiClient.resume()
+      const next = await apiClient.resume()
+      setStatus(applyTempoOverlay(next))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Resume failed')
     }
-  }, [])
+  }, [applyTempoOverlay])
 
   const stop = useCallback(async () => {
+    playbackEpochRef.current += 1
     try {
       const stopped = await apiClient.stop()
-      setStatus(applyTempoOverlay(mergePolledStatus(stopped, selectedSongRef.current)))
+      commitStatus(stopped)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Stop failed')
     }
-  }, [applyTempoOverlay])
+  }, [commitStatus])
 
   const selectSong = useCallback((song: Song) => {
     const run = async () => {
@@ -102,10 +119,14 @@ export function usePlayer() {
 
       // New song → snap UI tempo back to that piece's original BPM
       tempoBpmRef.current = clampTempo(song.bpm ?? 120)
+      const epoch = ++playbackEpochRef.current
 
       try {
         if (playbackIsBusy(statusRef.current)) {
           const stopped = await apiClient.stop()
+          // A play()/newer select started while we awaited stop — do not clobber it.
+          if (playbackEpochRef.current !== epoch) return
+          if (selectedSongRef.current?.filename !== song.filename) return
           setStatus(applyTempoOverlay(previewStatusForSong(stopped, song, { resetTempo: true })))
         } else {
           setStatus((prev) =>
@@ -115,6 +136,7 @@ export function usePlayer() {
           )
         }
       } catch (err) {
+        if (playbackEpochRef.current !== epoch) return
         setError(err instanceof Error ? err.message : 'Failed to stop previous song')
         setStatus((prev) =>
           prev

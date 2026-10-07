@@ -1,17 +1,9 @@
+import { getAudioContext } from './audioContext'
+
 /** Short metronome click for count-in accents. */
 export function playMetronomeClick(accent = false): void {
-  const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext
-  if (!AudioCtx) return
-
-  // Reuse one context across clicks
-  const w = window as unknown as { __pianoLedAudio?: AudioContext }
-  if (!w.__pianoLedAudio) {
-    w.__pianoLedAudio = new AudioCtx()
-  }
-  const ctx = w.__pianoLedAudio
-  if (ctx.state === 'suspended') {
-    void ctx.resume()
-  }
+  const ctx = getAudioContext()
+  if (!ctx) return
 
   const osc = ctx.createOscillator()
   const gain = ctx.createGain()

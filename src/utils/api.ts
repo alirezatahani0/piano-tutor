@@ -18,18 +18,21 @@ export const apiClient = {
 
   // Player control
   play: async (filename: string, options?: { countIn?: boolean }) => {
-    await client.post('/play', {
+    const res = await client.post<PlayerStatus>('/play', {
       filename,
       count_in: options?.countIn ?? false,
     })
+    return res.data
   },
 
   pause: async () => {
-    await client.post('/pause')
+    const res = await client.post<PlayerStatus>('/pause')
+    return res.data
   },
 
   resume: async () => {
-    await client.post('/resume')
+    const res = await client.post<PlayerStatus>('/resume')
+    return res.data
   },
 
   stop: async () => {

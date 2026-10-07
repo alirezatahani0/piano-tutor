@@ -47,11 +47,12 @@ const song: Song = {
 }
 
 describe('playbackIsBusy', () => {
-  it('is busy while playing, paused, counting in, or elapsed', () => {
+  it('is busy while playing, paused, or counting in — not merely leftover elapsed', () => {
     assert.equal(playbackIsBusy(baseStatus({ playing: true, elapsed: 0 })), true)
     assert.equal(playbackIsBusy(baseStatus({ paused: true, elapsed: 0, playing: false })), true)
     assert.equal(playbackIsBusy(baseStatus({ counting_in: true, elapsed: 0 })), true)
-    assert.equal(playbackIsBusy(baseStatus({ elapsed: 1.5 })), true)
+    // Idle leftover elapsed must not trigger stop() (races with a new play).
+    assert.equal(playbackIsBusy(baseStatus({ elapsed: 1.5 })), false)
     assert.equal(playbackIsBusy(baseStatus({ elapsed: 0 })), false)
   })
 })

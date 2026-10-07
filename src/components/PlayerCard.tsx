@@ -4,6 +4,7 @@ import Cover from './Cover'
 import { formatTime } from '../utils/format'
 import { beatIntervalMs, countInBeatsFor, timeSignatureLabel } from '../utils/countIn'
 import { playMetronomeClick } from '../utils/metronome'
+import { setPreviewVolume } from '../utils/noteAudio'
 import type { PlayerStatus, Song } from '../types/api'
 
 interface PlayerCardProps {
@@ -31,8 +32,14 @@ export default function PlayerCard({
   const [volume, setVolume] = useState(72)
   /** Remaining beats in the local count-in; null when idle. */
   const [countdown, setCountdown] = useState<number | null>(null)
+
+  useEffect(() => {
+    setPreviewVolume(volume)
+  }, [volume])
   const onPlayRef = useRef(onPlay)
   onPlayRef.current = onPlay
+  /** Locked when count-in starts so status polls cannot restart the timer. */
+  const countInIntervalRef = useRef(500)
 
   const countInBeats = countInBeatsFor(status, song)
   const beatInterval = beatIntervalMs(status?.effective_bpm || song?.bpm)
@@ -52,9 +59,10 @@ export default function PlayerCard({
     onCountInBeatChangeRef.current?.(countInBeat)
   }, [countInBeat])
 
-  // Advance count-in on the song's beat grid.
+  // Advance count-in on the song's beat grid (interval locked at start).
   useEffect(() => {
     if (countdown === null) return
+    const interval = countInIntervalRef.current
     const timer = window.setTimeout(() => {
       if (countdown > 1) {
         playMetronomeClick(false)
@@ -63,9 +71,9 @@ export default function PlayerCard({
         setCountdown(null)
         onPlayRef.current()
       }
-    }, beatInterval)
+    }, interval)
     return () => window.clearTimeout(timer)
-  }, [countdown, beatInterval])
+  }, [countdown])
 
   if (!status || !song) {
     return (
@@ -90,6 +98,7 @@ export default function PlayerCard({
       onResume()
       return
     }
+    countInIntervalRef.current = beatInterval
     setCountdown(countInBeats)
     playMetronomeClick(true)
   }
